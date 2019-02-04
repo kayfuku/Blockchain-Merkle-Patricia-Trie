@@ -48,6 +48,7 @@ func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 
 }
 
+// Convert key string to hex value array and append 16.
 func convert_string_to_hex(key string) []uint8 {
 	length := 2*len(key) + 1
 	key_hex := make([]uint8, length)
@@ -57,10 +58,6 @@ func convert_string_to_hex(key string) []uint8 {
 	}
 	key_hex[length-1] = 16
 	return key_hex
-}
-
-func (mpt *MerklePatriciaTrie) Delete(key string) {
-	// TODO
 }
 
 func compact_encode(hex_array []uint8) []uint8 {
@@ -73,6 +70,8 @@ func compact_encode(hex_array []uint8) []uint8 {
 		hex_array = hex_array[:len(hex_array)-1]
 	}
 	var isOdd uint8 = uint8(len(hex_array) % 2)
+	fmt.Println("isLeaf: ", isLeaf)
+	fmt.Println("isOdd: ", isOdd)
 	var firstHexValue uint8 = 2*isLeaf + isOdd
 	if isOdd == 1 {
 		hex_array = append([]uint8{firstHexValue}, hex_array...)
@@ -86,6 +85,10 @@ func compact_encode(hex_array []uint8) []uint8 {
 	}
 
 	return encoded_prefix
+}
+
+func (mpt *MerklePatriciaTrie) Delete(key string) {
+	// TODO
 }
 
 // If Leaf, ignore 16 at the end
@@ -117,16 +120,4 @@ func (node *Node) hash_node() string {
 
 	sum := sha3.Sum256([]byte(str))
 	return "HashStart_" + hex.EncodeToString(sum[:]) + "_HashEnd"
-}
-
-// Print the output of compact_encode()
-func Test_compact_encode(hex_array []uint8) {
-	ret := compact_encode(hex_array)
-	fmt.Println(ret)
-}
-
-// Print the output of convert_string_to_hex()
-func Test_convert_string_to_hex(key string) {
-	ret := convert_string_to_hex(key)
-	fmt.Println(ret)
 }
