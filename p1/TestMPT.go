@@ -17,3 +17,9 @@ func Test_compact_encode(hex_array []uint8) []uint8 {
 	fmt.Println(ret)
 	return ret
 }
+
+func Test_test_compact_encode() {
+	fmt.Println("Test_test_compact_encode() start.")
+	test_compact_encode()
+	return
+}

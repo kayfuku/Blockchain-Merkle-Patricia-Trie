@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestMPT(t *testing.T) {
+func Test(t *testing.T) {
 	mpt := p1.NewMPT()
 	mpt.Insert("", "")
 
@@ -32,5 +32,7 @@ func TestMPT(t *testing.T) {
 	key = "ab"
 	hex_array = p1.Test_convert_string_to_hex(key) // [6 1 6 2 16]
 	p1.Test_compact_encode(hex_array)              // [32 97 98]
+
+	p1.Test_test_compact_encode()
 
 }

@@ -10,7 +10,9 @@ import (
 
 type Flag_value struct {
 	encoded_prefix []uint8
-	value          string
+	// If the node is Ext, 'value' is hash of the next node.
+	// If the node is Leaf, 'value' is the string value inserted.
+	value string
 }
 
 type Node struct {
@@ -37,17 +39,6 @@ func NewMPT() *MerklePatriciaTrie {
 	return mpt
 }
 
-func (mpt *MerklePatriciaTrie) Get(key string) string {
-	// TODO
-	return ""
-}
-
-func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
-	// TODO
-	fmt.Println("hello")
-
-}
-
 // Convert key string to hex value array and append 16.
 func convert_string_to_hex(key string) []uint8 {
 	length := 2*len(key) + 1
@@ -72,29 +63,55 @@ func compact_encode(hex_array []uint8) []uint8 {
 	var isOdd uint8 = uint8(len(hex_array) % 2)
 	fmt.Println("isLeaf: ", isLeaf)
 	fmt.Println("isOdd: ", isOdd)
-	var firstHexValue uint8 = 2*isLeaf + isOdd
+	var flagInHexArray uint8 = 2*isLeaf + isOdd
 	if isOdd == 1 {
-		hex_array = append([]uint8{firstHexValue}, hex_array...)
+		hex_array = append([]uint8{flagInHexArray}, hex_array...)
 	} else {
-		hex_array = append(append([]uint8{firstHexValue}, 0), hex_array...)
+		hex_array = append(append([]uint8{flagInHexArray}, 0), hex_array...)
 	}
-	// 'hex_array' now has an even length whose first nibble is the 'firstHexValue'.
-	var encoded_prefix []uint8
-	for i := 0; i < len(hex_array); i = i + 2 {
-		encoded_prefix = append(encoded_prefix, 16*hex_array[i]+hex_array[i+1])
+	// 'hex_array' now has an even length whose first nibble is the 'flagInHexArray'.
+	// var encoded_prefix []uint8
+	// for i := 0; i < len(hex_array); i = i + 2 {
+	// 	encoded_prefix = append(encoded_prefix, 16*hex_array[i]+hex_array[i+1])
+	// }
+	length := len(hex_array) / 2
+	encoded_prefix := make([]uint8, length)
+	p := 0
+	for i := 0; i < len(hex_array); i += 2 {
+		encoded_prefix[p] = 16*hex_array[i] + hex_array[i+1]
+		p++
 	}
 
 	return encoded_prefix
 }
 
-func (mpt *MerklePatriciaTrie) Delete(key string) {
-	// TODO
-}
-
 // If Leaf, ignore 16 at the end
 func compact_decode(encoded_arr []uint8) []uint8 {
 	// TODO
-	return []uint8{}
+	length := len(encoded_arr) * 2
+	hex_array := make([]uint8, length)
+	for i, ascii := range encoded_arr {
+		hex_array[i*2] = ascii / 16
+		hex_array[i*2+1] = ascii % 16
+	}
+
+	cut := 2 - hex_array[0]&1
+	return hex_array[cut:]
+}
+
+func (mpt *MerklePatriciaTrie) Get(key string) string {
+	// TODO
+	return ""
+}
+
+func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
+	// TODO
+	fmt.Println("hello")
+
+}
+
+func (mpt *MerklePatriciaTrie) Delete(key string) {
+	// TODO
 }
 
 func test_compact_encode() {
