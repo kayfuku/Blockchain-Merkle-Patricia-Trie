@@ -1,6 +1,7 @@
 package p1
 
 import (
+	"bytes"
 	"encoding/hex"
 	"fmt"
 	"reflect"
@@ -9,6 +10,7 @@ import (
 )
 
 type Flag_value struct {
+	// ASCII value array.
 	encoded_prefix []uint8
 	// If the node is Ext, 'value' is hash of the next node.
 	// If the node is Leaf, 'value' is the string value inserted.
@@ -16,9 +18,12 @@ type Flag_value struct {
 }
 
 type Node struct {
-	node_type    int // 0: Null, 1: Branch, 2: Ext or Leaf
+	// 0: Null, 1: Branch, 2: Ext or Leaf
+	node_type int
+	// If the node is not Branch, 'branch_value' is nil.
 	branch_value [17]string
-	flag_value   Flag_value
+	// If the node is Branch, 'flag_value' is nil.
+	flag_value Flag_value
 }
 
 type MerklePatriciaTrie struct {
@@ -29,7 +34,10 @@ type MerklePatriciaTrie struct {
 }
 
 func NewMPT() *MerklePatriciaTrie {
-	node := Node{}
+	// Initialize node.
+	flagValue := Flag_value{encoded_prefix: nil, value: ""}
+	node := Node{node_type: 0, branch_value: [17]string{}, flag_value: flagValue}
+
 	hash := node.hash_node()
 
 	mpt := &MerklePatriciaTrie{}
@@ -70,10 +78,6 @@ func compact_encode(hex_array []uint8) []uint8 {
 		hex_array = append(append([]uint8{flagInHexArray}, 0), hex_array...)
 	}
 	// 'hex_array' now has an even length whose first nibble is the 'flagInHexArray'.
-	// var encoded_prefix []uint8
-	// for i := 0; i < len(hex_array); i = i + 2 {
-	// 	encoded_prefix = append(encoded_prefix, 16*hex_array[i]+hex_array[i+1])
-	// }
 	length := len(hex_array) / 2
 	encoded_prefix := make([]uint8, length)
 	p := 0
@@ -85,7 +89,7 @@ func compact_encode(hex_array []uint8) []uint8 {
 	return encoded_prefix
 }
 
-// If Leaf, ignore 16 at the end
+// If Leaf, ignore 16 at the end << why?
 func compact_decode(encoded_arr []uint8) []uint8 {
 	// TODO
 	length := len(encoded_arr) * 2
@@ -94,19 +98,64 @@ func compact_decode(encoded_arr []uint8) []uint8 {
 		hex_array[i*2] = ascii / 16
 		hex_array[i*2+1] = ascii % 16
 	}
-
+	if hex_array[0] >= 2 {
+		hex_array = append(hex_array, 16)
+	}
 	cut := 2 - hex_array[0]&1
 	return hex_array[cut:]
 }
 
 func (mpt *MerklePatriciaTrie) Get(key string) string {
 	// TODO
+	node := mpt.db[mpt.root]
+	hex := convert_string_to_hex(key)
+	return get_helper(node, hex, mpt.db)
+}
+func get_helper(node Node, hex []uint8, db map[string]Node) string {
+	if hex[0] == 16 {
+		return node.branch_value[16]
+	}
+	nodeType := node.node_type
+	switch nodeType {
+	case 0:
+		return ""
+	// Branch
+	case 1:
+
+	// Ext or Leaf
+	case 2:
+
+		encodedPrefix := node.flag_value.encoded_prefix
+		decodedPrefix := compact_decode(encodedPrefix)
+		if bytes.Equal(decodedPrefix, hex[:len(decodedPrefix)]) {
+			// Leaf
+			return node.flag_value.value
+		}
+		// Ext
+		nextNode := db[node.flag_value.value]
+		return get_helper(nextNode, hex[len(decodedPrefix):], db)
+
+	}
+
 	return ""
 }
 
 func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 	// TODO
-	fmt.Println("hello")
+	node := mpt.db[mpt.root]
+	nodeType := node.node_type
+
+	if nodeType == 0 {
+		hexValue := convert_string_to_hex(key)
+		encodedPrefix := compact_encode(hexValue)
+		flagValue := Flag_value{encoded_prefix: encodedPrefix, value: new_value}
+		node = Node{node_type: 2, flag_value: flagValue}
+
+		hash := node.hash_node()
+		// mpt.db = map[string]Node{hash: node}
+		mpt.db[hash] = node
+		mpt.root = hash
+	}
 
 }
 
