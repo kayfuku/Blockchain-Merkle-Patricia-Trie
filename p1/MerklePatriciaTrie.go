@@ -69,8 +69,8 @@ func compact_encode(hex_array []uint8) []uint8 {
 		hex_array = hex_array[:len(hex_array)-1]
 	}
 	var isOdd uint8 = uint8(len(hex_array) % 2)
-	fmt.Println("isLeaf: ", isLeaf)
-	fmt.Println("isOdd: ", isOdd)
+	// fmt.Println("isLeaf: ", isLeaf)
+	// fmt.Println("isOdd: ", isOdd)
 	var flagInHexArray uint8 = 2*isLeaf + isOdd
 	if isOdd == 1 {
 		hex_array = append([]uint8{flagInHexArray}, hex_array...)
@@ -98,6 +98,7 @@ func compact_decode(encoded_arr []uint8) []uint8 {
 		hex_array[i*2] = ascii / 16
 		hex_array[i*2+1] = ascii % 16
 	}
+	// Append 16 if it is Leaf.
 	if hex_array[0] >= 2 {
 		hex_array = append(hex_array, 16)
 	}
@@ -108,13 +109,13 @@ func compact_decode(encoded_arr []uint8) []uint8 {
 func (mpt *MerklePatriciaTrie) Get(key string) string {
 	// TODO
 	node := mpt.db[mpt.root]
-	hex := convert_string_to_hex(key)
-	return get_helper(node, hex, mpt.db)
+	keyHex := convert_string_to_hex(key)
+	return get_helper(node, keyHex, mpt.db)
 }
-func get_helper(node Node, hex []uint8, db map[string]Node) string {
-	if hex[0] == 16 {
-		return node.branch_value[16]
-	}
+func get_helper(node Node, keyHex []uint8, db map[string]Node) string {
+	// if keyHex[0] == 16 {
+	// 	return node.branch_value[16]
+	// }
 	nodeType := node.node_type
 	switch nodeType {
 	case 0:
@@ -124,16 +125,16 @@ func get_helper(node Node, hex []uint8, db map[string]Node) string {
 
 	// Ext or Leaf
 	case 2:
-
 		encodedPrefix := node.flag_value.encoded_prefix
 		decodedPrefix := compact_decode(encodedPrefix)
-		if bytes.Equal(decodedPrefix, hex[:len(decodedPrefix)]) {
+
+		if bytes.Equal(decodedPrefix, keyHex[:len(decodedPrefix)]) {
 			// Leaf
 			return node.flag_value.value
 		}
 		// Ext
 		nextNode := db[node.flag_value.value]
-		return get_helper(nextNode, hex[len(decodedPrefix):], db)
+		return get_helper(nextNode, keyHex[len(decodedPrefix):], db)
 
 	}
 
@@ -144,19 +145,32 @@ func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 	// TODO
 	node := mpt.db[mpt.root]
 	nodeType := node.node_type
+	keyHex := convert_string_to_hex(key)
 
-	if nodeType == 0 {
-		hexValue := convert_string_to_hex(key)
-		encodedPrefix := compact_encode(hexValue)
+	switch nodeType {
+	case 0:
+		encodedPrefix := compact_encode(keyHex)
+
 		flagValue := Flag_value{encoded_prefix: encodedPrefix, value: new_value}
 		node = Node{node_type: 2, flag_value: flagValue}
 
-		hash := node.hash_node()
-		// mpt.db = map[string]Node{hash: node}
-		mpt.db[hash] = node
-		mpt.root = hash
+	case 1:
+
+	case 2:
+		encodedPrefix := node.flag_value.encoded_prefix
+		decodedPrefix := compact_decode(encodedPrefix)
+
+		if bytes.Equal(decodedPrefix, keyHex[:len(decodedPrefix)]) {
+			node.flag_value.value = new_value
+		}
+
 	}
 
+	hash := node.hash_node()
+	mpt.db[hash] = node
+	mpt.root = hash
+
+	return
 }
 
 func (mpt *MerklePatriciaTrie) Delete(key string) {

@@ -39,6 +39,10 @@ func Test(t *testing.T) {
 	mpt := p1.NewMPT()
 	mpt.Insert("a", "apple")
 	ret := mpt.Get("a")
-	fmt.Println(ret)
+	fmt.Println(ret) // apple
+
+	mpt.Insert("a", "orange")
+	ret = mpt.Get("a")
+	fmt.Println(ret) // orange
 
 }
