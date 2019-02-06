@@ -148,30 +148,27 @@ func get_helper(node Node, keyHex []uint8, db map[string]Node) string {
 
 func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 	// TODO
-	node := mpt.db[mpt.root]
+	rootNode := mpt.db[mpt.root]
 	keyHex := convert_string_to_hex(key)
 
-	insert_helper(node, keyHex, new_value, mpt)
+	rootNode = insert_helper(rootNode, keyHex, new_value)
+	updateMPT(mpt, rootNode)
+	return
 }
-func insert_helper(node Node, keyHex []uint8, new_value string, mpt *MerklePatriciaTrie) {
-	if keyHex[0] == 16 {
-		node.flag_value.value = new_value
-		updateMPT(mpt, node)
-		return
-	}
+func insert_helper(node Node, keyHex []uint8, new_value string) Node {
+	// if keyHex[0] == 16 {
+	// 	node.flag_value.value = new_value
+	// 	updateMPT(mpt, node)
+	// 	return
+	// }
 
 	nodeType := node.node_type
-
 	switch nodeType {
 	case 0:
 		// Null node
 		// Create a new Leaf node.
 		node = createNewLeafOrExtNode(2, keyHex, new_value)
-		updateMPT(mpt, node)
-		return
-		// encodedPrefix := compact_encode(keyHex)
-		// flagValue := Flag_value{encoded_prefix: encodedPrefix, value: new_value}
-		// node = Node{node_type: 2, flag_value: flagValue}
+		return node
 	case 1:
 		// Branch
 
@@ -182,18 +179,40 @@ func insert_helper(node Node, keyHex []uint8, new_value string, mpt *MerklePatri
 
 		matchLen := prefixLen(keyHex, decodedPrefix)
 
-		// Whole key matches.
 		if matchLen == len(decodedPrefix) {
-			insert_helper(node, keyHex[matchLen:], new_value, mpt)
-			return
+			// Case A. decodedPrefix: [6 1], keyHex: [6 1 16]
+			if keyHex[matchLen] == 16 {
+				node.flag_value.value = new_value
+				return node
+			}
+			// insert_helper(node, keyHex[matchLen:], new_value, mpt)
+
+			// Case B. decodedPrefix: [6 1], keyHex: [6 1 6 1 16]
+			// extNode := createNewLeafOrExtNode(2, keyHex[:matchLen], "")
+			// branchNode := insert_helper(extNode, keyHex[matchLen:], new_value)
+
+			// branchNode := Node{node_type: 1, branch_value: [17]string{}}
+			// leafNode := createNewLeafOrExtNode(2, keyHex[matchLen+1:], new_value)
+			// branchNode.branch_value[keyHex[matchLen]] = leafNode.hash_node()
+			// extNode := createNewLeafOrExtNode(2, keyHex[:matchLen], branchNode.hash_node())
+			// hash := extNode.hash_node()
+			// mpt.db[hash] = extNode
+			// mpt.root = hash
+
 		}
 
-		// Key is different from index 0.
+		// TODO
+
+		// The first hex values are same.
 		// if matchlen != 0 {
 
 		// }
 
+		return node
+
 	}
+
+	return node
 
 }
 
