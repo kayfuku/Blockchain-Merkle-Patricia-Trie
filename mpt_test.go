@@ -46,7 +46,7 @@ func Test(t *testing.T) {
 		t.Errorf("Expected %s, but was %s", "apple", ret)
 	}
 
-	fmt.Println("Case A")
+	fmt.Println("Case A: ")
 	fmt.Println("Insert(\"a\", \"orange\")")
 	mpt.Insert("a", "orange")
 	fmt.Println("Get(\"a\")")
@@ -64,5 +64,24 @@ func Test(t *testing.T) {
 	p1.Test_prefixLen(a, b) // 0
 	b = []uint8{2, 2, 3, 4}
 	p1.Test_prefixLen(a, b) // 4
+
+	// fmt.Println("Case B: ")
+	// mpt = p1.NewMPT()
+	// fmt.Println("Insert(\"a\", \"apple\")")
+	// mpt.Insert("a", "apple")
+	// fmt.Println("Insert(\"aa\", \"orange\")")
+	// mpt.Insert("aa", "orange")
+	// fmt.Println("Get(\"a\")")
+	// ret = mpt.Get("a")
+	// fmt.Println(ret) // ??
+	// if ret != "apple" {
+	// 	t.Errorf("Expected %s, but was %s", "apple", ret)
+	// }
+	// fmt.Println("Get(\"aa\")")
+	// ret = mpt.Get("aa")
+	// fmt.Println(ret) // ??
+	// if ret != "orange" {
+	// 	t.Errorf("Expected %s, but was %s", "orange", ret)
+	// }
 
 }
