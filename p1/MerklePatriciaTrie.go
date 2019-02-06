@@ -137,11 +137,6 @@ func get_helper(node Node, keyHex []uint8, db map[string]Node) string {
 			return get_helper(node, keyHex[matchLen:], db)
 		}
 
-		// if bytes.Equal(decodedPrefix, keyHex[:len(decodedPrefix)]) {
-		// 	// Leaf
-		// 	return node.flag_value.value
-		// }
-
 		// Ext
 		nextNode := db[node.flag_value.value]
 		return get_helper(nextNode, keyHex[len(decodedPrefix):], db)
@@ -171,9 +166,12 @@ func insert_helper(node Node, keyHex []uint8, new_value string, mpt *MerklePatri
 	case 0:
 		// Null node
 		// Create a new Leaf node.
-		encodedPrefix := compact_encode(keyHex)
-		flagValue := Flag_value{encoded_prefix: encodedPrefix, value: new_value}
-		node = Node{node_type: 2, flag_value: flagValue}
+		node = createNewLeafOrExtNode(2, keyHex, new_value)
+		updateMPT(mpt, node)
+		return
+		// encodedPrefix := compact_encode(keyHex)
+		// flagValue := Flag_value{encoded_prefix: encodedPrefix, value: new_value}
+		// node = Node{node_type: 2, flag_value: flagValue}
 	case 1:
 		// Branch
 
@@ -190,29 +188,30 @@ func insert_helper(node Node, keyHex []uint8, new_value string, mpt *MerklePatri
 			return
 		}
 
-		//
+		// Key is different from index 0.
+		// if matchlen != 0 {
 
-		encodedPrefix = compact_encode(keyHex)
-		flagValue := Flag_value{encoded_prefix: encodedPrefix, value: new_value}
-		node = Node{node_type: 2, flag_value: flagValue}
-
-		if keyHex[0] != decodedPrefix[0] {
-			// Create a new Branch node.
-
-		}
+		// }
 
 	}
 
-	updateMPT(mpt, node)
+}
 
-	return
-
+func (mpt *MerklePatriciaTrie) Delete(key string) {
+	// TODO
 }
 
 func updateMPT(mpt *MerklePatriciaTrie, node Node) {
 	hash := node.hash_node()
 	mpt.db[hash] = node
 	mpt.root = hash
+}
+
+func createNewLeafOrExtNode(nodeType int, keyHex []uint8, newValue string) Node {
+	encodedPrefix := compact_encode(keyHex)
+	flagValue := Flag_value{encoded_prefix: encodedPrefix, value: newValue}
+	node := Node{node_type: nodeType, flag_value: flagValue}
+	return node
 }
 
 func prefixLen(a []uint8, b []uint8) int {
@@ -228,10 +227,6 @@ func prefixLen(a []uint8, b []uint8) int {
 		i++
 	}
 	return i
-}
-
-func (mpt *MerklePatriciaTrie) Delete(key string) {
-	// TODO
 }
 
 func test_compact_encode() {
