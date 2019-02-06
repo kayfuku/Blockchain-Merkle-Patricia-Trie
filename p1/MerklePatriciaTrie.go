@@ -149,28 +149,57 @@ func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 
 	switch nodeType {
 	case 0:
+		// Null node
+		// Create a new Leaf node.
 		encodedPrefix := compact_encode(keyHex)
-
 		flagValue := Flag_value{encoded_prefix: encodedPrefix, value: new_value}
 		node = Node{node_type: 2, flag_value: flagValue}
-
 	case 1:
+		// Branch
 
 	case 2:
+		// Ext or Leaf
 		encodedPrefix := node.flag_value.encoded_prefix
 		decodedPrefix := compact_decode(encodedPrefix)
 
 		if bytes.Equal(decodedPrefix, keyHex[:len(decodedPrefix)]) {
+			// Whole key matches.
 			node.flag_value.value = new_value
+			updateMPT(mpt, node)
+			return
+		}
+
+		if keyHex[0] != decodedPrefix[0] {
+			// Create a new Branch node.
+
 		}
 
 	}
 
+	updateMPT(mpt, node)
+
+	return
+}
+
+func updateMPT(mpt *MerklePatriciaTrie, node Node) {
 	hash := node.hash_node()
 	mpt.db[hash] = node
 	mpt.root = hash
+}
 
-	return
+func prefixLen(a []uint8, b []uint8) int {
+	length := len(a)
+	if len(b) < length {
+		length = len(b)
+	}
+	i := 0
+	for i < length {
+		if a[i] != b[i] {
+			break
+		}
+		i++
+	}
+	return i
 }
 
 func (mpt *MerklePatriciaTrie) Delete(key string) {

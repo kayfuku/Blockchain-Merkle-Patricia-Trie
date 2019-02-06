@@ -23,3 +23,9 @@ func Test_test_compact_encode() {
 	test_compact_encode()
 	return
 }
+
+func Test_prefixLen(a []uint8, b []uint8) int {
+	ret := prefixLen(a, b)
+	fmt.Println(ret)
+	return ret
+}

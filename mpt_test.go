@@ -45,4 +45,13 @@ func Test(t *testing.T) {
 	ret = mpt.Get("a")
 	fmt.Println(ret) // orange
 
+	// Test prefixLen()
+	a := []uint8{2, 2, 3, 4}
+	b := []uint8{2, 2, 3, 5}
+	p1.Test_prefixLen(a, b) // 3
+	b = []uint8{0, 2, 3, 5}
+	p1.Test_prefixLen(a, b) // 0
+	b = []uint8{2, 2, 3, 4}
+	p1.Test_prefixLen(a, b) // 4
+
 }
