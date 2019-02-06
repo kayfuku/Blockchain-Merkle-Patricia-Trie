@@ -91,6 +91,10 @@ func compact_encode(hex_array []uint8) []uint8 {
 // If Leaf, ignore 16 at the end << why?
 func compact_decode(encoded_arr []uint8) []uint8 {
 	// TODO
+	if len(encoded_arr) == 0 {
+		return []uint8{}
+	}
+
 	length := len(encoded_arr) * 2
 	hex_array := make([]uint8, length)
 	for i, ascii := range encoded_arr {
@@ -110,11 +114,11 @@ func compact_decode(encoded_arr []uint8) []uint8 {
 func (mpt *MerklePatriciaTrie) Get(key string) string {
 	// TODO
 	node := mpt.db[mpt.root]
-	keyHex := convert_string_to_hex(key)
-	return get_helper(node, keyHex, mpt.db)
+	keySearch := convert_string_to_hex(key)
+	return get_helper(node, keySearch, mpt.db)
 }
-func get_helper(node Node, keyHex []uint8, db map[string]Node) string {
-	if keyHex[0] == 16 {
+func get_helper(node Node, keySearch []uint8, db map[string]Node) string {
+	if keySearch[0] == 16 {
 		return node.flag_value.value
 	}
 	nodeType := node.node_type
@@ -130,16 +134,16 @@ func get_helper(node Node, keyHex []uint8, db map[string]Node) string {
 		encodedPrefix := node.flag_value.encoded_prefix
 		decodedPrefix := compact_decode(encodedPrefix)
 
-		matchLen := prefixLen(keyHex, decodedPrefix)
+		matchLen := prefixLen(keySearch, decodedPrefix)
 
 		// Whole key matches.
 		if matchLen == len(decodedPrefix) {
-			return get_helper(node, keyHex[matchLen:], db)
+			return get_helper(node, keySearch[matchLen:], db)
 		}
 
 		// Ext
 		nextNode := db[node.flag_value.value]
-		return get_helper(nextNode, keyHex[len(decodedPrefix):], db)
+		return get_helper(nextNode, keySearch[len(decodedPrefix):], db)
 
 	}
 
@@ -148,15 +152,19 @@ func get_helper(node Node, keyHex []uint8, db map[string]Node) string {
 
 func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 	// TODO
-	rootNode := mpt.db[mpt.root]
-	keyHex := convert_string_to_hex(key)
+	keySearch := convert_string_to_hex(key)
 
-	rootNode = insert_helper(rootNode, keyHex, new_value)
+	rootNode := mpt.db[mpt.root]
+	encodedPrefix := rootNode.flag_value.encoded_prefix
+	keyMPT := compact_decode(encodedPrefix)
+
+	rootNode = insert_helper(rootNode, keyMPT, keySearch, new_value)
 	updateMPT(mpt, rootNode)
+
 	return
 }
-func insert_helper(node Node, keyHex []uint8, new_value string) Node {
-	// if keyHex[0] == 16 {
+func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string) Node {
+	// if keySearch[0] == 16 {
 	// 	node.flag_value.value = new_value
 	// 	updateMPT(mpt, node)
 	// 	return
@@ -167,38 +175,46 @@ func insert_helper(node Node, keyHex []uint8, new_value string) Node {
 	case 0:
 		// Null node
 		// Create a new Leaf node.
-		node = createNewLeafOrExtNode(2, keyHex, new_value)
+		node = createNewLeafOrExtNode(2, keySearch, new_value)
 		return node
 	case 1:
 		// Branch
 
 	case 2:
 		// Ext or Leaf
-		encodedPrefix := node.flag_value.encoded_prefix
-		decodedPrefix := compact_decode(encodedPrefix)
+		// encodedPrefix := node.flag_value.encoded_prefix
+		// decodedPrefix := compact_decode(encodedPrefix)
 
-		matchLen := prefixLen(keyHex, decodedPrefix)
+		matchLen := prefixLen(keySearch, keyMPT)
 
-		if matchLen == len(decodedPrefix) {
-			// Case A. decodedPrefix: [6 1], keyHex: [6 1 16]
-			if keyHex[matchLen] == 16 {
+		if matchLen == len(keyMPT) {
+			// Case A. keyMPT: [6 1], keySearch: [6 1 16]
+			if keySearch[matchLen] == 16 {
 				node.flag_value.value = new_value
 				return node
 			}
-			// insert_helper(node, keyHex[matchLen:], new_value, mpt)
+			// insert_helper(node, keySearch[matchLen:], new_value, mpt)
 
-			// Case B. decodedPrefix: [6 1], keyHex: [6 1 6 1 16]
-			// extNode := createNewLeafOrExtNode(2, keyHex[:matchLen], "")
-			// branchNode := insert_helper(extNode, keyHex[matchLen:], new_value)
+			// Case B. keyMPT: [6 1], keySearch: [6 1 6 1 16]
+			extNode := createNewLeafOrExtNode(2, keySearch[:matchLen], node.flag_value.value)
+			branchNode := insert_helper(extNode, keyMPT[matchLen:], keySearch[matchLen:], new_value)
+			extNode.flag_value.value = branchNode.hash_node()
+			return extNode
 
 			// branchNode := Node{node_type: 1, branch_value: [17]string{}}
-			// leafNode := createNewLeafOrExtNode(2, keyHex[matchLen+1:], new_value)
-			// branchNode.branch_value[keyHex[matchLen]] = leafNode.hash_node()
-			// extNode := createNewLeafOrExtNode(2, keyHex[:matchLen], branchNode.hash_node())
+			// leafNode := createNewLeafOrExtNode(2, keySearch[matchLen+1:], new_value)
+			// branchNode.branch_value[keySearch[matchLen]] = leafNode.hash_node()
+			// extNode := createNewLeafOrExtNode(2, keySearch[:matchLen], branchNode.hash_node())
 			// hash := extNode.hash_node()
 			// mpt.db[hash] = extNode
 			// mpt.root = hash
 
+		} else if matchLen == 0 {
+			branchNode := Node{node_type: 1, branch_value: [17]string{}}
+			leafNode := createNewLeafOrExtNode(2, keySearch[matchLen+1:], new_value)
+			leafNode = insert_helper(leafNode, nil, keySearch, new_value)
+			branchNode.branch_value[keySearch[matchLen]] = leafNode.hash_node()
+			return branchNode
 		}
 
 		// TODO

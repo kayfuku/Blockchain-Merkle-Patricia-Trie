@@ -37,13 +37,24 @@ func Test(t *testing.T) {
 	// Test Insert(), Get()
 	fmt.Println("Test Insert(), Get(): ")
 	mpt := p1.NewMPT()
+	fmt.Println("Insert(\"a\", \"apple\")")
 	mpt.Insert("a", "apple")
+	fmt.Println("Get(\"a\")")
 	ret := mpt.Get("a")
 	fmt.Println(ret) // apple
+	if ret != "apple" {
+		t.Errorf("Expected %s, but was %s", "apple", ret)
+	}
 
+	fmt.Println("Case A")
+	fmt.Println("Insert(\"a\", \"orange\")")
 	mpt.Insert("a", "orange")
+	fmt.Println("Get(\"a\")")
 	ret = mpt.Get("a")
 	fmt.Println(ret) // orange
+	if ret != "orange" {
+		t.Errorf("Expected %s, but was %s", "orange", ret)
+	}
 
 	// Test prefixLen()
 	a := []uint8{2, 2, 3, 4}
