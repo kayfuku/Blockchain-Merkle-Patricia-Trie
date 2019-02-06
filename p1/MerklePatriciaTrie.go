@@ -1,7 +1,6 @@
 package p1
 
 import (
-	"bytes"
 	"encoding/hex"
 	"fmt"
 	"reflect"
@@ -98,10 +97,12 @@ func compact_decode(encoded_arr []uint8) []uint8 {
 		hex_array[i*2] = ascii / 16
 		hex_array[i*2+1] = ascii % 16
 	}
+
 	// Append 16 if it is Leaf.
-	if hex_array[0] >= 2 {
-		hex_array = append(hex_array, 16)
-	}
+	// if hex_array[0] >= 2 {
+	// 	hex_array = append(hex_array, 16)
+	// }
+
 	cut := 2 - hex_array[0]&1
 	return hex_array[cut:]
 }
@@ -113,25 +114,34 @@ func (mpt *MerklePatriciaTrie) Get(key string) string {
 	return get_helper(node, keyHex, mpt.db)
 }
 func get_helper(node Node, keyHex []uint8, db map[string]Node) string {
-	// if keyHex[0] == 16 {
-	// 	return node.branch_value[16]
-	// }
+	if keyHex[0] == 16 {
+		return node.flag_value.value
+	}
 	nodeType := node.node_type
 	switch nodeType {
 	case 0:
+		// Null node
 		return ""
-	// Branch
 	case 1:
+		// Branch
 
-	// Ext or Leaf
 	case 2:
+		// Ext or Leaf
 		encodedPrefix := node.flag_value.encoded_prefix
 		decodedPrefix := compact_decode(encodedPrefix)
 
-		if bytes.Equal(decodedPrefix, keyHex[:len(decodedPrefix)]) {
-			// Leaf
-			return node.flag_value.value
+		matchLen := prefixLen(keyHex, decodedPrefix)
+
+		// Whole key matches.
+		if matchLen == len(decodedPrefix) {
+			return get_helper(node, keyHex[matchLen:], db)
 		}
+
+		// if bytes.Equal(decodedPrefix, keyHex[:len(decodedPrefix)]) {
+		// 	// Leaf
+		// 	return node.flag_value.value
+		// }
+
 		// Ext
 		nextNode := db[node.flag_value.value]
 		return get_helper(nextNode, keyHex[len(decodedPrefix):], db)
@@ -144,8 +154,18 @@ func get_helper(node Node, keyHex []uint8, db map[string]Node) string {
 func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 	// TODO
 	node := mpt.db[mpt.root]
-	nodeType := node.node_type
 	keyHex := convert_string_to_hex(key)
+
+	insert_helper(node, keyHex, new_value, mpt)
+}
+func insert_helper(node Node, keyHex []uint8, new_value string, mpt *MerklePatriciaTrie) {
+	if keyHex[0] == 16 {
+		node.flag_value.value = new_value
+		updateMPT(mpt, node)
+		return
+	}
+
+	nodeType := node.node_type
 
 	switch nodeType {
 	case 0:
@@ -162,12 +182,19 @@ func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 		encodedPrefix := node.flag_value.encoded_prefix
 		decodedPrefix := compact_decode(encodedPrefix)
 
-		if bytes.Equal(decodedPrefix, keyHex[:len(decodedPrefix)]) {
-			// Whole key matches.
-			node.flag_value.value = new_value
-			updateMPT(mpt, node)
+		matchLen := prefixLen(keyHex, decodedPrefix)
+
+		// Whole key matches.
+		if matchLen == len(decodedPrefix) {
+			insert_helper(node, keyHex[matchLen:], new_value, mpt)
 			return
 		}
+
+		//
+
+		encodedPrefix = compact_encode(keyHex)
+		flagValue := Flag_value{encoded_prefix: encodedPrefix, value: new_value}
+		node = Node{node_type: 2, flag_value: flagValue}
 
 		if keyHex[0] != decodedPrefix[0] {
 			// Create a new Branch node.
@@ -179,6 +206,7 @@ func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 	updateMPT(mpt, node)
 
 	return
+
 }
 
 func updateMPT(mpt *MerklePatriciaTrie, node Node) {
