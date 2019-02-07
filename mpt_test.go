@@ -95,7 +95,7 @@ func Test(t *testing.T) {
 	// Get("aa")
 	fmt.Println("Get(\"aa\")")
 	ret = mpt.Get("aa")
-	fmt.Println(ret) // ??
+	fmt.Println(ret) // orange
 	if ret != "orange" {
 		t.Errorf("Expected %s, but was %s", "orange", ret)
 	}

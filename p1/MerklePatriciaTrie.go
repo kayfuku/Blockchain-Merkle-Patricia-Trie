@@ -136,10 +136,14 @@ func get_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) string
 		return ""
 	case 1:
 		// Branch
-		// Case B-1 (Partial match).
-		// stack 2. keyMPT: [], keySearch: [6 1 16]
-		// nextNode
-		// return get_helper(node[keySearch[matchLen]])
+		// Insert("a"), Insert("aa"), Get("aa"), stack 2. keyMPT: [], keySearch: [6 1 16]
+		if node, ok := db[node.branch_value[keySearch[0]]]; ok {
+			// 'node' is now the next node.
+			encodedPrefix := node.flag_value.encoded_prefix
+			keyMPT := compact_decode(encodedPrefix)
+			return get_helper(node, keyMPT, keySearch[1:], db)
+		}
+		return "Not found"
 
 	case 2:
 		// Ext or Leaf
@@ -150,23 +154,24 @@ func get_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) string
 		if matchLen != 0 {
 
 			if keySearch[matchLen] == 16 {
-				// Case A. keyMPT: [6 1], keySearch: [6 1 16]
 				if node, ok := db[node.flag_value.value]; ok {
 					// 'node' is Ext node.
+					// Insert("a"), Insert("aa"), Get("a"), stack 1. keyMPT: [6 1], keySearch: [6 1 16], matchLen: 2
 					return node.branch_value[16]
 				}
 				// 'node' is Leaf node.
+				// Insert("a"), Get("a"). keyMPT: [6 1], keySearch: [6 1 16], matchLen: 2
+				// Insert("a"), Insert("aa"), Get("aa"), stack 3. keyMPT: [1], keySearch: [1 16], matchLen: 1
 				return node.flag_value.value
 			}
 
-			// Case B-1 (Partial match).
-			// stack 1. keyMPT: [6 1], keySearch: [6 1 6 1 16]
+			// Insert("a"), Insert("aa"), Get("aa"), stack 1. keyMPT: [6 1], keySearch: [6 1 6 1 16], matchLen: 2
 			if node, ok := db[node.flag_value.value]; ok {
 				// 'node' is now Branch node.
 				return get_helper(node, keyMPT[matchLen:], keySearch[matchLen:], db)
 			}
 			// 'node' is Leaf node.
-			return ""
+			return "Not found."
 
 		} else if matchLen == 0 {
 
@@ -197,14 +202,6 @@ func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 	return
 }
 func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string, db map[string]Node) Node {
-	// if keyMPT == nil && keySearch == nil {
-	// 	return node
-	// }
-	// if keySearch[0] == 16 {
-	// 	node.flag_value.value = new_value
-	// 	updateMPT(mpt, node)
-	// 	return
-	// }
 
 	nodeType := node.node_type
 	switch nodeType {
