@@ -39,29 +39,30 @@ func Test(t *testing.T) {
 	mpt := p1.NewMPT()
 	var ret string
 
-	// // Insert("a", "apple"), Get("a")
-	// fmt.Println("Insert(\"a\", \"apple\")")
-	// mpt.Insert("a", "apple")
-	// fmt.Println("Get(\"a\")")
-	// ret = mpt.Get("a")
-	// fmt.Println(ret) // apple
-	// if ret != "apple" {
-	// 	t.Errorf("Expected %s, but was %s", "apple", ret)
-	// }
+	// Insert("a", "apple")
+	// Get("a")
+	fmt.Println("Insert(\"a\", \"apple\")")
+	mpt.Insert("a", "apple")
+	fmt.Println("Get(\"a\")")
+	ret = mpt.Get("a")
+	fmt.Println(ret) // apple
+	if ret != "apple" {
+		t.Errorf("Expected %s, but was %s", "apple", ret)
+	}
 
-	// // Case A:
-	// // Insert("a", "apple")
-	// // Insert("a", "orange")
-	// // Get("a")
-	// fmt.Println("Case A: ")
-	// fmt.Println("Insert(\"a\", \"orange\")")
-	// mpt.Insert("a", "orange")
-	// fmt.Println("Get(\"a\")")
-	// ret = mpt.Get("a")
-	// fmt.Println(ret) // orange
-	// if ret != "orange" {
-	// 	t.Errorf("Expected %s, but was %s", "orange", ret)
-	// }
+	// Case A (Exact match):
+	// Insert("a", "apple")
+	// Insert("a", "orange")
+	// Get("a")
+	fmt.Println("Case A: ")
+	fmt.Println("Insert(\"a\", \"orange\")")
+	mpt.Insert("a", "orange")
+	fmt.Println("Get(\"a\")")
+	ret = mpt.Get("a")
+	fmt.Println(ret) // orange
+	if ret != "orange" {
+		t.Errorf("Expected %s, but was %s", "orange", ret)
+	}
 
 	// // Test prefixLen()
 	// a := []uint8{2, 2, 3, 4}
@@ -72,7 +73,7 @@ func Test(t *testing.T) {
 	// b = []uint8{2, 2, 3, 4}
 	// p1.Test_prefixLen(a, b) // 4
 
-	// Case B:
+	// Case B-1 (Partial match):
 	// Insert("a", "apple")
 	// Insert("aa", "orange")
 	// Get("a")
@@ -88,14 +89,15 @@ func Test(t *testing.T) {
 	if ret != "apple" {
 		t.Errorf("Expected %s, but was %s", "apple", ret)
 	}
-	// // Insert("a", "apple")
-	// // Insert("aa", "orange")
-	// // Get("aa")
-	// fmt.Println("Get(\"aa\")")
-	// ret = mpt.Get("aa")
-	// fmt.Println(ret) // ??
-	// if ret != "orange" {
-	// 	t.Errorf("Expected %s, but was %s", "orange", ret)
-	// }
+	// Case B-1 (Partial match):
+	// Insert("a", "apple")
+	// Insert("aa", "orange")
+	// Get("aa")
+	fmt.Println("Get(\"aa\")")
+	ret = mpt.Get("aa")
+	fmt.Println(ret) // ??
+	if ret != "orange" {
+		t.Errorf("Expected %s, but was %s", "orange", ret)
+	}
 
 }
