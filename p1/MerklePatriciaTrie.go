@@ -19,9 +19,9 @@ type Flag_value struct {
 type Node struct {
 	// 0: Null, 1: Branch, 2: Ext or Leaf
 	node_type int
-	// If the node is not Branch, 'branch_value' is nil.
+	// If the node is not Branch, 'branch_value' is default.
 	branch_value [17]string
-	// If the node is Branch, 'flag_value' is nil.
+	// If the node is Branch, 'flag_value' is default.
 	flag_value Flag_value
 }
 
@@ -113,14 +113,18 @@ func compact_decode(encoded_arr []uint8) []uint8 {
 
 func (mpt *MerklePatriciaTrie) Get(key string) string {
 	// TODO
-	node := mpt.db[mpt.root]
 	keySearch := convert_string_to_hex(key)
-	return get_helper(node, keySearch, mpt.db)
+
+	rootNode := mpt.db[mpt.root]
+	encodedPrefix := rootNode.flag_value.encoded_prefix
+	keyMPT := compact_decode(encodedPrefix)
+
+	return get_helper(rootNode, keyMPT, keySearch, mpt.db)
 }
-func get_helper(node Node, keySearch []uint8, db map[string]Node) string {
-	if keySearch[0] == 16 {
-		return node.flag_value.value
-	}
+func get_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) string {
+	// if keySearch[0] == 16 {
+	// 	return node.flag_value.value
+	// }
 	nodeType := node.node_type
 	switch nodeType {
 	case 0:
@@ -131,19 +135,31 @@ func get_helper(node Node, keySearch []uint8, db map[string]Node) string {
 
 	case 2:
 		// Ext or Leaf
-		encodedPrefix := node.flag_value.encoded_prefix
-		decodedPrefix := compact_decode(encodedPrefix)
 
-		matchLen := prefixLen(keySearch, decodedPrefix)
+		matchLen := prefixLen(keySearch, keyMPT)
 
-		// Whole key matches.
-		if matchLen == len(decodedPrefix) {
-			return get_helper(node, keySearch[matchLen:], db)
+		// if matchLen == len(keyMPT) {
+		if matchLen != 0 {
+
+			if keySearch[matchLen] == 16 {
+				// Case A. keyMPT: [6 1], keySearch: [6 1 16]
+				if node, ok := db[node.flag_value.value]; ok {
+					return node.branch_value[16]
+				}
+				return node.flag_value.value
+			}
+
+			// Case B. keyMPT: [6 1], keySearch: [6 1 6 1 16]
+			// extNode := createNewLeafOrExtNode(2, keySearch[:matchLen], node.flag_value.value)
+			// branchNode := insert_helper(extNode, keyMPT[matchLen:], keySearch[matchLen:], new_value)
+			// extNode.flag_value.value = branchNode.hash_node()
+			// return extNode
+
 		}
 
 		// Ext
-		nextNode := db[node.flag_value.value]
-		return get_helper(nextNode, keySearch[len(decodedPrefix):], db)
+		// nextNode := db[node.flag_value.value]
+		// return get_helper(nextNode, keySearch[len(decodedPrefix):], db)
 
 	}
 
@@ -154,16 +170,20 @@ func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 	// TODO
 	keySearch := convert_string_to_hex(key)
 
-	rootNode := mpt.db[mpt.root]
+	db := mpt.db
+	rootNode := db[mpt.root]
 	encodedPrefix := rootNode.flag_value.encoded_prefix
 	keyMPT := compact_decode(encodedPrefix)
 
-	rootNode = insert_helper(rootNode, keyMPT, keySearch, new_value)
+	rootNode = insert_helper(rootNode, keyMPT, keySearch, new_value, db)
 	updateMPT(mpt, rootNode)
 
 	return
 }
-func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string) Node {
+func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string, db map[string]Node) Node {
+	// if keyMPT == nil && keySearch == nil {
+	// 	return node
+	// }
 	// if keySearch[0] == 16 {
 	// 	node.flag_value.value = new_value
 	// 	updateMPT(mpt, node)
@@ -182,47 +202,40 @@ func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string) Node 
 
 	case 2:
 		// Ext or Leaf
-		// encodedPrefix := node.flag_value.encoded_prefix
-		// decodedPrefix := compact_decode(encodedPrefix)
 
 		matchLen := prefixLen(keySearch, keyMPT)
+		// stack 1: 2
+		// stack 2: 0
 
-		if matchLen == len(keyMPT) {
-			// Case A. keyMPT: [6 1], keySearch: [6 1 16]
+		// if matchLen == len(keyMPT) {
+		if matchLen != 0 {
 			if keySearch[matchLen] == 16 {
+				// Case A. keyMPT: [6 1], keySearch: [6 1 16]
 				node.flag_value.value = new_value
 				return node
 			}
-			// insert_helper(node, keySearch[matchLen:], new_value, mpt)
 
-			// Case B. keyMPT: [6 1], keySearch: [6 1 6 1 16]
-			extNode := createNewLeafOrExtNode(2, keySearch[:matchLen], node.flag_value.value)
-			branchNode := insert_helper(extNode, keyMPT[matchLen:], keySearch[matchLen:], new_value)
+			// Case B.
+			// stack 1. keyMPT: [6 1], keySearch: [6 1 6 1 16]
+			extNode := createNewLeafOrExtNode(2, keyMPT[:matchLen], "")
+			branchNode := insert_helper(extNode, keyMPT[matchLen:], keySearch[matchLen:], new_value, db)
+			branchNode.branch_value[16] = node.flag_value.value
+			hash := branchNode.hash_node()
+			db[hash] = branchNode
 			extNode.flag_value.value = branchNode.hash_node()
 			return extNode
 
-			// branchNode := Node{node_type: 1, branch_value: [17]string{}}
-			// leafNode := createNewLeafOrExtNode(2, keySearch[matchLen+1:], new_value)
-			// branchNode.branch_value[keySearch[matchLen]] = leafNode.hash_node()
-			// extNode := createNewLeafOrExtNode(2, keySearch[:matchLen], branchNode.hash_node())
-			// hash := extNode.hash_node()
-			// mpt.db[hash] = extNode
-			// mpt.root = hash
-
 		} else if matchLen == 0 {
+			// Case B.
+			// stack 2. keyMPT: [], keySearch: [6 1 16]
 			branchNode := Node{node_type: 1, branch_value: [17]string{}}
 			leafNode := createNewLeafOrExtNode(2, keySearch[matchLen+1:], new_value)
-			leafNode = insert_helper(leafNode, nil, keySearch, new_value)
-			branchNode.branch_value[keySearch[matchLen]] = leafNode.hash_node()
+			hash := leafNode.hash_node()
+			db[hash] = leafNode
+			// leafNode = insert_helper(leafNode, nil, nil, new_value)
+			branchNode.branch_value[keySearch[matchLen]] = hash
 			return branchNode
 		}
-
-		// TODO
-
-		// The first hex values are same.
-		// if matchlen != 0 {
-
-		// }
 
 		return node
 
