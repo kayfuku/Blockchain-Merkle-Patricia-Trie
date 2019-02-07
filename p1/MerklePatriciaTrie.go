@@ -59,6 +59,9 @@ func convert_string_to_hex(key string) []uint8 {
 }
 
 func compact_encode(hex_array []uint8) []uint8 {
+	if len(hex_array) == 0 {
+		return []uint8{}
+	}
 	// TODO
 	var isLeaf uint8 = 0
 	if hex_array[len(hex_array)-1] == 16 {
@@ -126,9 +129,6 @@ func (mpt *MerklePatriciaTrie) Get(key string) string {
 	return get_helper(rootNode, keyMPT, keySearch, mpt.db)
 }
 func get_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) string {
-	// if keySearch[0] == 16 {
-	// 	return node.flag_value.value
-	// }
 	nodeType := node.node_type
 	switch nodeType {
 	case 0:
@@ -137,6 +137,7 @@ func get_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) string
 	case 1:
 		// Branch
 		// Insert("a"), Insert("aa"), Get("aa"), stack 2. keyMPT: [], keySearch: [6 1 16]
+		// Insert("a"), Insert("b"), Get("a"), stack 2. keyMPT: [], keySearch: [1 16]
 		if node, ok := db[node.branch_value[keySearch[0]]]; ok {
 			// 'node' is now the next node.
 			encodedPrefix := node.flag_value.encoded_prefix
@@ -150,12 +151,11 @@ func get_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) string
 
 		matchLen := prefixLen(keySearch, keyMPT)
 
-		// if matchLen == len(keyMPT) {
 		if matchLen != 0 {
 
 			if keySearch[matchLen] == 16 {
 				if node, ok := db[node.flag_value.value]; ok {
-					// 'node' is Ext node.
+					// 'node' is now Branch node next to the Ext node.
 					// Insert("a"), Insert("aa"), Get("a"), stack 1. keyMPT: [6 1], keySearch: [6 1 16], matchLen: 2
 					return node.branch_value[16]
 				}
@@ -166,16 +166,21 @@ func get_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) string
 			}
 
 			// Insert("a"), Insert("aa"), Get("aa"), stack 1. keyMPT: [6 1], keySearch: [6 1 6 1 16], matchLen: 2
+			// Insert("a"), Insert("b"), Get("a"), stack 1. keyMPT: [6], keySearch: [6 1 16], matchLen: 1
 			if node, ok := db[node.flag_value.value]; ok {
-				// 'node' is now Branch node.
+				// 'node' is now Branch node next to the Ext node.
 				return get_helper(node, keyMPT[matchLen:], keySearch[matchLen:], db)
 			}
-			// 'node' is Leaf node.
+			// 'node' is Leaf node and keySearch still has hex number.
 			return "Not found."
 
 		} else if matchLen == 0 {
 
-			return ""
+			if keySearch[matchLen] == 16 {
+				// Insert("a"), Insert("b"), Get("a"), stack 3. keyMPT: [], keySearch: [16], matchLen: 0
+				return node.flag_value.value
+			}
+			return "Not found."
 		}
 
 	}
