@@ -128,4 +128,31 @@ func Test(t *testing.T) {
 		t.Errorf("Expected %s, but was %s", "orange", ret)
 	}
 
+	// Case B-3 (Partial match):
+	// Insert("aa", "apple")
+	// Insert("a", "orange")
+	// Get("a")
+	mpt = p1.NewMPT()
+	fmt.Println("Insert(\"aa\", \"apple\")")
+	mpt.Insert("aa", "apple")
+	fmt.Println("Insert(\"a\", \"orange\")")
+	mpt.Insert("a", "orange")
+	fmt.Println("Get(\"a\")")
+	ret = mpt.Get("a")
+	fmt.Println(ret) // orange
+	if ret != "orange" {
+		t.Errorf("Expected %s, but was %s", "orange", ret)
+	}
+
+	// Case B-3 (Partial match):
+	// Insert("aa", "apple")
+	// Insert("a", "orange")
+	// Get("aa")
+	fmt.Println("Get(\"aa\")")
+	ret = mpt.Get("aa")
+	fmt.Println(ret) // apple
+	if ret != "apple" {
+		t.Errorf("Expected %s, but was %s", "apple", ret)
+	}
+
 }

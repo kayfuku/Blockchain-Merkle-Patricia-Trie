@@ -227,7 +227,7 @@ func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string, db ma
 
 		// if matchLen == len(keyMPT) {
 		if matchLen != 0 {
-			if keySearch[matchLen] == 16 {
+			if keySearch[matchLen] == 16 && len(keyMPT) == matchLen {
 				// Case A (Exact match). keyMPT: [6 1], keySearch: [6 1 16]
 				node.flag_value.value = new_value
 				return node
@@ -251,7 +251,7 @@ func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string, db ma
 
 			hash := branchNode.hash_node()
 			db[hash] = branchNode
-			extNode.flag_value.value = branchNode.hash_node()
+			extNode.flag_value.value = hash
 			return extNode
 
 		} else if matchLen == 0 {
