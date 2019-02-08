@@ -141,7 +141,7 @@ func get_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) string
 			// Case B-1. Insert("a"), Insert("aa"), Get("aa"), stack 2. keyMPT: [], keySearch: [6 1 16]
 			// Case B-2. Insert("a"), Insert("b"), Get("a"), stack 2. keyMPT: [], keySearch: [1 16]
 			// Case B-3. Insert("aa"), Insert("a"), Get("aa"), stack 2. keyMPT: [], keySearch: [6 1 16]
-
+			// Case C.   Insert("a"), Insert("p"), Get("a"), stack 1. keyMPT: [], keySearch: [6 1 16]
 			encodedPrefix := node.flag_value.encoded_prefix
 			keyMPT := compact_decode(encodedPrefix)
 			return get_helper(node, keyMPT, keySearch[1:], db)
@@ -169,6 +169,7 @@ func get_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) string
 				// Case A. Insert("a"), Get("a"). keyMPT: [6 1], keySearch: [6 1 16], matchLen: 2
 				// Case B-1. Insert("a"), Insert("aa"), Get("aa"), stack 3. keyMPT: [1], keySearch: [1 16], matchLen: 1
 				// Case B-3. Insert("aa"), Insert("a"), Get("aa"), stack 3. keyMPT: [1], keySearch: [1 16], matchLen: 1
+				// Case C.   Insert("a"), Insert("p"), Get("a"), stack 2. keyMPT: [1], keySearch: [1 16]
 				return node.flag_value.value
 			}
 
@@ -279,6 +280,8 @@ func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string, db ma
 			} else {
 				// Case B-2 (Prefix match).
 				// stack 2. keyMPT: [1], keySearch: [2 16], matchLen: 0
+				// Case C (Mismatch).
+				// keyMPT: [6 1], keySearch: [7 0], matchLen: 0
 				leafNode := createNewLeafOrExtNode(2, keySearch[matchLen+1:], new_value)
 				branchNode.branch_value[keySearch[matchLen]] = putNodeInDb(leafNode, db)
 

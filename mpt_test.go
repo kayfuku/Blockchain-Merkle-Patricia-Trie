@@ -160,6 +160,7 @@ func Test(t *testing.T) {
 	// Insert("a", "apple")
 	// Insert("b", "orange")
 	// Get("a")
+	fmt.Println("Case B-2: ")
 	mpt = p1.NewMPT()
 	fmt.Println("Insert(\"a\", \"apple\")")
 	mpt.Insert("a", "apple")
@@ -189,6 +190,7 @@ func Test(t *testing.T) {
 	// Insert("aa", "apple")
 	// Insert("a", "orange")
 	// Get("a")
+	fmt.Println("Case B-3: ")
 	mpt = p1.NewMPT()
 	fmt.Println("Insert(\"aa\", \"apple\")")
 	mpt.Insert("aa", "apple")
@@ -218,6 +220,7 @@ func Test(t *testing.T) {
 	// Insert("a", "apple")
 	// Insert("p", "orange")
 	// Get("a")
+	fmt.Println("Case C: ")
 	mpt = p1.NewMPT()
 	fmt.Println("Insert(\"a\", \"apple\")")
 	mpt.Insert("a", "apple")
@@ -225,7 +228,7 @@ func Test(t *testing.T) {
 	mpt.Insert("p", "orange")
 	fmt.Println("Get(\"a\")")
 	ret = mpt.Get("a")
-	fmt.Println(ret) // ??
+	fmt.Println(ret) // apple
 	if ret != "apple" {
 		t.Errorf("Case C (Mismatch): Insert(\"a\", \"apple\"), Insert(\"p\", \"orange\"), Get(\"a\")"+
 			"Expected %s, but was %s", "apple", ret)
@@ -235,5 +238,12 @@ func Test(t *testing.T) {
 	// Insert("a", "apple")
 	// Insert("p", "orange")
 	// Get("p")
+	fmt.Println("Get(\"p\")")
+	ret = mpt.Get("p")
+	fmt.Println(ret) // orange
+	if ret != "orange" {
+		t.Errorf("Case C (Mismatch): Insert(\"a\", \"apple\"), Insert(\"p\", \"orange\"), Get(\"p\")"+
+			"Expected %s, but was %s", "orange", ret)
+	}
 
 }
