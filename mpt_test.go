@@ -215,8 +215,25 @@ func Test(t *testing.T) {
 	}
 
 	// Case C (Mismatch).
-	// Insert("aa", "apple")
-	// Insert("a", "orange")
-	// Get("aa")
+	// Insert("a", "apple")
+	// Insert("p", "orange")
+	// Get("a")
+	mpt = p1.NewMPT()
+	fmt.Println("Insert(\"a\", \"apple\")")
+	mpt.Insert("a", "apple")
+	fmt.Println("Insert(\"p\", \"orange\")")
+	mpt.Insert("p", "orange")
+	fmt.Println("Get(\"a\")")
+	ret = mpt.Get("a")
+	fmt.Println(ret) // ??
+	if ret != "apple" {
+		t.Errorf("Case C (Mismatch): Insert(\"a\", \"apple\"), Insert(\"p\", \"orange\"), Get(\"a\")"+
+			"Expected %s, but was %s", "apple", ret)
+	}
+
+	// Case C (Mismatch).
+	// Insert("a", "apple")
+	// Insert("p", "orange")
+	// Get("p")
 
 }

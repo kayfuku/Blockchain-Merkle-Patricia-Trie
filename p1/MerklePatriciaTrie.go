@@ -37,11 +37,9 @@ func NewMPT() *MerklePatriciaTrie {
 	flagValue := Flag_value{encoded_prefix: nil, value: ""}
 	node := Node{node_type: 0, branch_value: [17]string{}, flag_value: flagValue}
 
-	hash := node.hash_node()
-
 	mpt := &MerklePatriciaTrie{}
-	mpt.db = map[string]Node{hash: node}
-	mpt.root = hash
+	mpt.db = map[string]Node{}
+	mpt.root = putNodeInDb(node, mpt.db)
 
 	return mpt
 }
@@ -235,8 +233,6 @@ func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string, db ma
 		// Ext or Leaf
 
 		matchLen := prefixLen(keySearch, keyMPT)
-		// stack 1: 2
-		// stack 2: 0
 
 		// if matchLen == len(keyMPT) {
 		if matchLen != 0 {
@@ -262,9 +258,7 @@ func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string, db ma
 				branchNode.branch_value[16] = new_value
 			}
 
-			hash := branchNode.hash_node()
-			db[hash] = branchNode
-			extNode.flag_value.value = hash
+			extNode.flag_value.value = putNodeInDb(branchNode, db)
 			return extNode
 
 		} else if matchLen == 0 {
@@ -274,28 +268,22 @@ func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string, db ma
 				// Case B-1 (Prefix match).
 				// stack 2. keyMPT: [], keySearch: [6 1 16], matchLen: 0
 				leafNode := createNewLeafOrExtNode(2, keySearch[matchLen+1:], new_value)
-				hash := leafNode.hash_node()
-				db[hash] = leafNode
-				branchNode.branch_value[keySearch[matchLen]] = hash
+				branchNode.branch_value[keySearch[matchLen]] = putNodeInDb(leafNode, db)
+
 			} else if keySearch[matchLen] == 16 {
 				// Case B-3 (Prefix match).
 				// stack 2. keyMPT: [6 1], keySearch: [16], matchLen: 0
 				leafNode := createNewLeafOrExtNode(2, append(keyMPT[matchLen+1:], 16), node.flag_value.value)
-				hash := leafNode.hash_node()
-				db[hash] = leafNode
-				branchNode.branch_value[keyMPT[matchLen]] = hash
+				branchNode.branch_value[keyMPT[matchLen]] = putNodeInDb(leafNode, db)
+
 			} else {
 				// Case B-2 (Prefix match).
 				// stack 2. keyMPT: [1], keySearch: [2 16], matchLen: 0
 				leafNode := createNewLeafOrExtNode(2, keySearch[matchLen+1:], new_value)
-				hash := leafNode.hash_node()
-				db[hash] = leafNode
-				branchNode.branch_value[keySearch[matchLen]] = hash
+				branchNode.branch_value[keySearch[matchLen]] = putNodeInDb(leafNode, db)
 
 				leafNode = createNewLeafOrExtNode(2, append(keyMPT[matchLen+1:], 16), node.flag_value.value)
-				hash = leafNode.hash_node()
-				db[hash] = leafNode
-				branchNode.branch_value[keyMPT[matchLen]] = hash
+				branchNode.branch_value[keyMPT[matchLen]] = putNodeInDb(leafNode, db)
 			}
 
 			return branchNode
@@ -322,6 +310,12 @@ func createNewLeafOrExtNode(nodeType int, keyHex []uint8, newValue string) Node 
 	flagValue := Flag_value{encoded_prefix: encodedPrefix, value: newValue}
 	node := Node{node_type: nodeType, flag_value: flagValue}
 	return node
+}
+
+func putNodeInDb(node Node, db map[string]Node) string {
+	hash := node.hash_node()
+	db[hash] = node
+	return hash
 }
 
 func prefixLen(a []uint8, b []uint8) int {
