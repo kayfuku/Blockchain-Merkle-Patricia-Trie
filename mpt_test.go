@@ -12,17 +12,37 @@ func Test(t *testing.T) {
 	hex_array := p1.Test_convert_string_to_hex(key) // [6 4 6 15 16]
 	p1.Test_compact_encode(hex_array)               // [32 100 111]
 
+	// Ext, even
+	hex_array2 := []uint8{6, 1}
+	p1.Test_compact_encode(hex_array2) // [0 97]
+	hex_array2 = []uint8{7, 0}
+	p1.Test_compact_encode(hex_array2) // [0 112]
+	hex_array2 = []uint8{3, 0}
+	p1.Test_compact_encode(hex_array2) // [0 48]
+	hex_array2 = []uint8{7, 10}
+	p1.Test_compact_encode(hex_array2) // [0 122]
+
+	// Ext, odd
+	hex_array = []uint8{2}
+	p1.Test_compact_encode(hex_array) // [18]
 	hex_array = []uint8{1, 6, 1}
 	p1.Test_compact_encode(hex_array) // [17 97]
 
-	hex_array = []uint8{2}
-	p1.Test_compact_encode(hex_array) // [18]
+	// Leaf, even
+	hex_array2 = []uint8{6, 4, 16}
+	p1.Test_compact_encode(hex_array2) // [32 100]
+	hex_array2 = []uint8{6, 4, 7, 0, 16}
+	p1.Test_compact_encode(hex_array2) // [32 100 112]
+	hex_array2 = []uint8{3, 0, 16}
+	p1.Test_compact_encode(hex_array2) // [32 48]
+	hex_array2 = []uint8{7, 10, 16}
+	p1.Test_compact_encode(hex_array2) // [32 122]
 
-	hex_array2 := []uint8{2, 16}
+	// Leaf, odd
+	hex_array2 = []uint8{2, 16}
 	p1.Test_compact_encode(hex_array2) // [50]
-
-	hex_array2 = []uint8{6, 1}
-	p1.Test_compact_encode(hex_array2) // [0 97]
+	hex_array2 = []uint8{2, 5, 4, 16}
+	p1.Test_compact_encode(hex_array2) // [50 84]
 
 	key = "a"
 	hex_array = p1.Test_convert_string_to_hex(key) // [6 1 16]
@@ -32,6 +52,33 @@ func Test(t *testing.T) {
 	hex_array = p1.Test_convert_string_to_hex(key) // [6 1 6 2 16]
 	p1.Test_compact_encode(hex_array)              // [32 97 98]
 
+	key = "0"
+	hex_array = p1.Test_convert_string_to_hex(key) // [3 0 16]
+	p1.Test_compact_encode(hex_array)              // [32 48]
+
+	key = "A"
+	hex_array = p1.Test_convert_string_to_hex(key) // [4 1 16]
+	p1.Test_compact_encode(hex_array)              // [32 65]
+
+	key = "z"
+	hex_array = p1.Test_convert_string_to_hex(key) // [7 10 16]
+	p1.Test_compact_encode(hex_array)              // [32 122]
+
+	// Test getFirstDigitOfAscii()
+	ascii := []uint8{0, 97}
+	p1.Test_getFirstDigitOfAscii(ascii) // 0
+	ascii = []uint8{16, 97}
+	p1.Test_getFirstDigitOfAscii(ascii) // 1
+	ascii = []uint8{25, 97}
+	p1.Test_getFirstDigitOfAscii(ascii) // 2
+	ascii = []uint8{32, 97}
+	p1.Test_getFirstDigitOfAscii(ascii) // 3
+	ascii = []uint8{48, 97}
+	p1.Test_getFirstDigitOfAscii(ascii) // 4
+	ascii = []uint8{57, 97}
+	p1.Test_getFirstDigitOfAscii(ascii) // 5
+
+	// Test test_compact_encode()
 	p1.Test_test_compact_encode()
 
 	// Test Insert(), Get()

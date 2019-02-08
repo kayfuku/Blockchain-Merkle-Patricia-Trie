@@ -59,10 +59,10 @@ func convert_string_to_hex(key string) []uint8 {
 }
 
 func compact_encode(hex_array []uint8) []uint8 {
+	// TODO
 	if len(hex_array) == 0 {
 		return []uint8{}
 	}
-	// TODO
 	var isLeaf uint8 = 0
 	if hex_array[len(hex_array)-1] == 16 {
 		isLeaf = 1
@@ -154,6 +154,19 @@ func get_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) string
 		if matchLen != 0 {
 
 			if keySearch[matchLen] == 16 {
+
+				// ** TODO **
+				// if node.flag_value.encoded_prefix {
+				// 	node, ok := db[node.flag_value.value]
+				// 	// 'node' is now Branch node next to the Ext node.
+				// 	// Insert("a"), Insert("aa"), Get("a"), stack 1. keyMPT: [6 1], keySearch: [6 1 16], matchLen: 2
+				// 	return node.branch_value[16]
+				// }
+				// // 'node' is Leaf node.
+				// // Insert("a"), Get("a"). keyMPT: [6 1], keySearch: [6 1 16], matchLen: 2
+				// // Insert("a"), Insert("aa"), Get("aa"), stack 3. keyMPT: [1], keySearch: [1 16], matchLen: 1
+				// return node.flag_value.value
+
 				if node, ok := db[node.flag_value.value]; ok {
 					// 'node' is now Branch node next to the Ext node.
 					// Insert("a"), Insert("aa"), Get("a"), stack 1. keyMPT: [6 1], keySearch: [6 1 16], matchLen: 2
@@ -289,11 +302,9 @@ func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string, db ma
 		}
 
 		return node
-
 	}
 
 	return node
-
 }
 
 func (mpt *MerklePatriciaTrie) Delete(key string) {
@@ -326,6 +337,11 @@ func prefixLen(a []uint8, b []uint8) int {
 		i++
 	}
 	return i
+}
+
+func getFirstDigitOfAscii(encodedPrefix []uint8) uint8 {
+	firstDigit := encodedPrefix[0] / 10
+	return firstDigit
 }
 
 func test_compact_encode() {

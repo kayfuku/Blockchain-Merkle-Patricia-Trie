@@ -29,3 +29,9 @@ func Test_prefixLen(a []uint8, b []uint8) int {
 	fmt.Println(ret)
 	return ret
 }
+
+func Test_getFirstDigitOfAscii(a []uint8) uint8 {
+	ret := getFirstDigitOfAscii(a)
+	fmt.Println(ret)
+	return ret
+}
