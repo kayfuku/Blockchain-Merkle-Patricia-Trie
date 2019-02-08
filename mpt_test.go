@@ -85,8 +85,18 @@ func Test(t *testing.T) {
 	// Test test_compact_encode()
 	p1.Test_test_compact_encode()
 
-	// Test Insert(), Get()
+	// // Test prefixLen()
+	// a := []uint8{2, 2, 3, 4}
+	// b := []uint8{2, 2, 3, 5}
+	// p1.Test_prefixLen(a, b) // 3
+	// b = []uint8{0, 2, 3, 5}
+	// p1.Test_prefixLen(a, b) // 0
+	// b = []uint8{2, 2, 3, 4}
+	// p1.Test_prefixLen(a, b) // 4
+
+	// Test Insert(), Get() start.
 	fmt.Println("Test Insert(), Get(): ")
+
 	mpt := p1.NewMPT()
 	var ret string
 
@@ -115,15 +125,6 @@ func Test(t *testing.T) {
 		t.Errorf("Case A (Exact match): Insert(\"a\", \"apple\"), Insert(\"a\", \"orange\"), Get(\"a\")"+
 			"Expected %s, but was %s", "orange", ret)
 	}
-
-	// // Test prefixLen()
-	// a := []uint8{2, 2, 3, 4}
-	// b := []uint8{2, 2, 3, 5}
-	// p1.Test_prefixLen(a, b) // 3
-	// b = []uint8{0, 2, 3, 5}
-	// p1.Test_prefixLen(a, b) // 0
-	// b = []uint8{2, 2, 3, 4}
-	// p1.Test_prefixLen(a, b) // 4
 
 	// Case B-1 (Partial match):
 	// Insert("a", "apple")
@@ -212,5 +213,10 @@ func Test(t *testing.T) {
 		t.Errorf("Case B-3 (Partial match): Insert(\"aa\", \"apple\"), Insert(\"a\", \"orange\"), Get(\"aa\")"+
 			"Expected %s, but was %s", "apple", ret)
 	}
+
+	// Case C (Mismatch).
+	// Insert("aa", "apple")
+	// Insert("a", "orange")
+	// Get("aa")
 
 }

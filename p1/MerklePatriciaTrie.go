@@ -292,7 +292,7 @@ func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string, db ma
 				db[hash] = leafNode
 				branchNode.branch_value[keySearch[matchLen]] = hash
 
-				leafNode = createNewLeafOrExtNode(2, keyMPT[matchLen+1:], node.flag_value.value)
+				leafNode = createNewLeafOrExtNode(2, append(keyMPT[matchLen+1:], 16), node.flag_value.value)
 				hash = leafNode.hash_node()
 				db[hash] = leafNode
 				branchNode.branch_value[keyMPT[matchLen]] = hash
