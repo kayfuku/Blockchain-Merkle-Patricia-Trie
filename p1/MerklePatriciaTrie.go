@@ -238,6 +238,12 @@ func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string, db ma
 	case 1:
 		// Branch
 
+		if keySearch[0] == 16 {
+			// Case E-2. stack 3. keyMPT: [], keySearch: [16]
+			node.branch_value[16] = new_value
+			return node
+		}
+
 		if nextNode, ok := db[node.branch_value[keySearch[0]]]; ok {
 			// There is a link in the Branch.
 			// 'nextNode' is the node next to the Branch.
@@ -264,22 +270,12 @@ func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string, db ma
 
 		matchLen := prefixLen(keySearch, keyMPT)
 
-		// if matchLen == len(keyMPT) {
 		if matchLen != 0 {
 
 			if firstDigit := getFirstDigitOfAscii(node.flag_value.encoded_prefix); firstDigit == 0 || firstDigit == 1 || firstDigit == 2 {
 				// 'node' is Ext.
 
-				if keySearch[matchLen] == 16 && len(keyMPT) == matchLen {
-					// Case E-2. stack 2. keyMPT: [1 6 1 6 1 6 1], keySearch: [1 6 1 6 1 6 1 16], matchLen: 6
-					branchNode := db[node.flag_value.value]
-					branchNode.branch_value[16] = new_value
-					node.flag_value.value = putNodeInDb(branchNode, db)
-
-					return node
-				}
-
-				if keySearch[matchLen] == 16 {
+				if keySearch[matchLen] == 16 && len(keySearch) < len(keyMPT) {
 					// Case E-1. stack 2. keyMPT: [1 6 1 6 1 6 1], keySearch: [1 6 1 16], matchLen: 3
 					extNode1 := createNewLeafOrExtNode(2, keyMPT[:matchLen], "")
 					branchNode := Node{node_type: 1, branch_value: [17]string{}}
@@ -290,6 +286,16 @@ func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string, db ma
 
 					return extNode1
 				}
+
+				if keySearch[matchLen] == 16 && len(keyMPT) == matchLen {
+					// Case E-2. stack 2. keyMPT: [1 6 1 6 1 6 1], keySearch: [1 6 1 6 1 6 1 16], matchLen: 7
+					branchNode := db[node.flag_value.value]
+					branchNode = insert_helper(branchNode, nil, keySearch[matchLen:], new_value, db)
+					node.flag_value.value = putNodeInDb(branchNode, db)
+
+					return node
+				}
+
 			}
 
 			// 'node' is Leaf.
