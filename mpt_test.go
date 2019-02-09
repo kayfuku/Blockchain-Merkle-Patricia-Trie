@@ -276,11 +276,12 @@ func Test(t *testing.T) {
 			"Expected %s, but was %s", "banana", ret)
 	}
 
-	// Instructor's test cases. (Case D)
+	// Instructor's test cases. (Case D-1)
 	// Insert("a", "apple")
 	// Insert("p", "banana")
 	// Insert("abc", "new")
-	// Get("a"), Get("p"), Get("new")
+	// Get("a"), Get("p"), Get("abc")
+	fmt.Println("Instructor's test cases (Case D-1): ")
 	mpt = p1.NewMPT()
 	fmt.Println("Insert(\"a\", \"apple\")")
 	mpt.Insert("a", "apple")
@@ -310,11 +311,82 @@ func Test(t *testing.T) {
 			"Expected %s, but was %s", "new", ret)
 	}
 
+	// Case D-2
+	// Insert("a", "apple")
+	// Insert("p", "banana")
+	// Insert("b", "new")
+	// Get("a"), Get("p"), Get("b")
+	fmt.Println("Case D-2: ")
+	mpt = p1.NewMPT()
+	fmt.Println("Insert(\"a\", \"apple\")")
+	mpt.Insert("a", "apple")
+	fmt.Println("Insert(\"p\", \"banana\")")
+	mpt.Insert("p", "banana")
+	fmt.Println("Insert(\"b\", \"new\")")
+	mpt.Insert("b", "new")
+	fmt.Println("Get(\"a\")")
+	ret = mpt.Get("a")
+	fmt.Println(ret) // apple
+	if ret != "apple" {
+		t.Errorf("Instructor's test case. Insert(\"a\", \"apple\"), Insert(\"p\", \"banana\"), Insert(\"b\", \"new\"), Get(\"a\") \n"+
+			"Expected %s, but was %s", "apple", ret)
+	}
+	fmt.Println("Get(\"p\")")
+	ret = mpt.Get("p")
+	fmt.Println(ret) // banana
+	if ret != "banana" {
+		t.Errorf("Instructor's test case. Insert(\"a\", \"apple\"), Insert(\"p\", \"banana\"), Insert(\"b\", \"new\"), Get(\"p\") \n"+
+			"Expected %s, but was %s", "banana", ret)
+	}
+	fmt.Println("Get(\"b\")")
+	ret = mpt.Get("b")
+	fmt.Println(ret) // new
+	if ret != "new" {
+		t.Errorf("Instructor's test case. Insert(\"a\", \"apple\"), Insert(\"p\", \"banana\"), Insert(\"b\", \"new\"), Get(\"b\") \n"+
+			"Expected %s, but was %s", "new", ret)
+	}
+
+	// Case D-3
+	// Insert("a", "apple")
+	// Insert("p", "banana")
+	// Insert("A", "new")
+	// Get("a"), Get("p"), Get("A")
+	fmt.Println("Case D-3: ")
+	mpt = p1.NewMPT()
+	fmt.Println("Insert(\"a\", \"apple\")")
+	mpt.Insert("a", "apple")
+	fmt.Println("Insert(\"p\", \"banana\")")
+	mpt.Insert("p", "banana")
+	fmt.Println("Insert(\"b\", \"new\")")
+	mpt.Insert("A", "new")
+	fmt.Println("Get(\"a\")")
+	ret = mpt.Get("a")
+	fmt.Println(ret) // apple
+	if ret != "apple" {
+		t.Errorf("Instructor's test case. Insert(\"a\", \"apple\"), Insert(\"p\", \"banana\"), Insert(\"A\", \"new\"), Get(\"a\") \n"+
+			"Expected %s, but was %s", "apple", ret)
+	}
+	fmt.Println("Get(\"p\")")
+	ret = mpt.Get("p")
+	fmt.Println(ret) // banana
+	if ret != "banana" {
+		t.Errorf("Instructor's test case. Insert(\"a\", \"apple\"), Insert(\"p\", \"banana\"), Insert(\"A\", \"new\"), Get(\"p\") \n"+
+			"Expected %s, but was %s", "banana", ret)
+	}
+	fmt.Println("Get(\"A\")")
+	ret = mpt.Get("A")
+	fmt.Println(ret) // new
+	if ret != "new" {
+		t.Errorf("Instructor's test case. Insert(\"a\", \"apple\"), Insert(\"p\", \"banana\"), Insert(\"A\", \"new\"), Get(\"A\") \n"+
+			"Expected %s, but was %s", "new", ret)
+	}
+
 	// Instructor's test cases.
 	// Insert("p", "apple")
 	// Insert("aa", "banana")
 	// Insert("ap", "orange")
 	// Get("p"), Get("aa"), Get("ap")
+	fmt.Println("Instructor's test cases: ")
 	mpt = p1.NewMPT()
 	fmt.Println("Insert(\"p\", \"apple\")")
 	mpt.Insert("p", "apple")
@@ -350,6 +422,7 @@ func Test(t *testing.T) {
 	// Insert("aaaap", "orange")
 	// Insert("aa", "new")
 	// Get("p"), Get("aaaaa"), Get("aaaap"), Get("aa")
+	fmt.Println("Instructor's test cases: ")
 	mpt = p1.NewMPT()
 	fmt.Println("Insert(\"p\", \"apple\")")
 	mpt.Insert("p", "apple")
@@ -368,7 +441,7 @@ func Test(t *testing.T) {
 	}
 	fmt.Println("Get(\"aaaaa\")")
 	ret = mpt.Get("aaaaa")
-	fmt.Println(ret) // ??
+	fmt.Println(ret) // banana
 	if ret != "banana" {
 		t.Errorf("Instructor's test case. Insert(\"p\", \"apple\"), Insert(\"aaaaa\", \"banana\"), Insert(\"aaaap\", \"orange\"), Insert(\"aa\", \"new\"), Get(\"aaaaa\") \n"+
 			"Expected %s, but was %s", "banana", ret)
