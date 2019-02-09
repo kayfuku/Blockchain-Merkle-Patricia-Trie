@@ -148,6 +148,7 @@ func get_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) string
 			keyMPT := compact_decode(encodedPrefix)
 			return get_helper(node, keyMPT, keySearch[1:], db)
 		}
+		// If there is no link in the Branch.
 		return "Not found"
 
 	case 2:
@@ -236,9 +237,11 @@ func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string, db ma
 		// Branch
 
 		if nextNode, ok := db[node.branch_value[keySearch[0]]]; ok {
-			// There is a link in the Branch.
-			// Case D. stack 1. Insert("a"), Insert("p"), Insert("abc"), Get("abc"),
+			// There is a link in the Branch. 'nextNode' is the node next to the Branch.
+			// Case D. Insert("a"), Insert("p"), Insert("abc"), Get("abc"),
 			// stack 1. keyMPT: [], keySearch: [6 1 6 2 6 3 16]
+			// Case E. Insert("p"), Insert("aaaaa"), Insert("aaaap"), Insert("aa"), Get("aa"),
+			// stack 1. keyMPT: [], keySearch: [6 1 6 1 16]
 			encodedPrefix := nextNode.flag_value.encoded_prefix
 			keyMPT := compact_decode(encodedPrefix)
 			nextNode = insert_helper(nextNode, keyMPT, keySearch[1:], new_value, db)
@@ -276,6 +279,7 @@ func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string, db ma
 			// Case B-3 (Prefix match).
 			// stack 1. keyMPT: [6 1 6 1] , keySearch: [6 1 16], matchLen: 2
 			// Case D. stack 2. keyMPT: [1], keySearch: [1 6 2 6 3 16], matchLen: 1
+			// Case E. stack 2. keyMPT: [1 6 1 6 1 6 1], keySearch: [1 6 1 16], matchLen: 3
 			extNode := createNewLeafOrExtNode(2, keyMPT[:matchLen], node.flag_value.value)
 			branchNode := insert_helper(extNode, keyMPT[matchLen:], keySearch[matchLen:], new_value, db)
 			if matchLen == len(keyMPT) {
@@ -310,7 +314,7 @@ func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string, db ma
 				// Case B-2 (Prefix match).
 				// stack 2. keyMPT: [1], keySearch: [2 16], matchLen: 0
 				// Case C (Mismatch).
-				// keyMPT: [6 1], keySearch: [7 0], matchLen: 0
+				// keyMPT: [6 1], keySearch: [7 0 16], matchLen: 0
 				leafNode := createNewLeafOrExtNode(2, keySearch[matchLen+1:], new_value)
 				branchNode.branch_value[keySearch[matchLen]] = putNodeInDb(leafNode, db)
 
