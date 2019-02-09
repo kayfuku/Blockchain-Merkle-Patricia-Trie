@@ -310,4 +310,38 @@ func Test(t *testing.T) {
 			"Expected %s, but was %s", "new", ret)
 	}
 
+	// Instructor's test cases.
+	// Insert("p", "apple")
+	// Insert("aa", "banana")
+	// Insert("ap", "orange")
+	// Get("p"), Get("aa"), Get("ap")
+	mpt = p1.NewMPT()
+	fmt.Println("Insert(\"p\", \"apple\")")
+	mpt.Insert("p", "apple")
+	fmt.Println("Insert(\"aa\", \"banana\")")
+	mpt.Insert("aa", "banana")
+	fmt.Println("Insert(\"ap\", \"orange\")")
+	mpt.Insert("ap", "orange")
+	fmt.Println("Get(\"p\")")
+	ret = mpt.Get("p")
+	fmt.Println(ret) // apple
+	if ret != "apple" {
+		t.Errorf("Instructor's test case. Insert(\"p\", \"apple\"), Insert(\"aa\", \"banana\"), Insert(\"ap\", \"orange\"), Get(\"p\") \n"+
+			"Expected %s, but was %s", "apple", ret)
+	}
+	fmt.Println("Get(\"aa\")")
+	ret = mpt.Get("aa")
+	fmt.Println(ret) // banana
+	if ret != "banana" {
+		t.Errorf("Instructor's test case. Insert(\"p\", \"apple\"), Insert(\"aa\", \"banana\"), Insert(\"ap\", \"orange\"), Get(\"aa\") \n"+
+			"Expected %s, but was %s", "banana", ret)
+	}
+	fmt.Println("Get(\"ap\")")
+	ret = mpt.Get("ap")
+	fmt.Println(ret) // orange
+	if ret != "orange" {
+		t.Errorf("Instructor's test case. Insert(\"p\", \"apple\"), Insert(\"aa\", \"banana\"), Insert(\"ap\", \"orange\"), Get(\"ap\") \n"+
+			"Expected %s, but was %s", "orange", ret)
+	}
+
 }
