@@ -287,7 +287,7 @@ func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string, db ma
 					return extNode1
 				}
 
-				if keySearch[matchLen] == 16 && len(keyMPT) == matchLen {
+				if len(keyMPT) == matchLen {
 					// Case E-2. stack 2. keyMPT: [1 6 1 6 1 6 1], keySearch: [1 6 1 6 1 6 1 16], matchLen: 7
 					branchNode := db[node.flag_value.value]
 					branchNode = insert_helper(branchNode, nil, keySearch[matchLen:], new_value, db)
