@@ -276,8 +276,8 @@ func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string, db ma
 			if firstDigit := getFirstDigitOfAscii(node.flag_value.encoded_prefix); firstDigit == 0 || firstDigit == 1 || firstDigit == 2 {
 				// 'node' is Ext.
 
-				// if keySearch[matchLen] == 16 && len(keySearch) <= len(keyMPT) {
 				if keySearch[matchLen] == 16 && len(keyMPT) > matchLen {
+					// keySearch is done and keyMPT is left.
 					// Case E-1. stack 2. keyMPT: [1 6 1 6 1 6 1], keySearch: [1 6 1 16], matchLen: 3
 					extNode1 := createNewLeafOrExtNode(2, keyMPT[:matchLen], "")
 					branchNode := Node{node_type: 1, branch_value: [17]string{}}
@@ -290,6 +290,7 @@ func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string, db ma
 				}
 
 				if len(keyMPT) == matchLen {
+					// keyMPT is done.
 					// Case E-2. stack 2. keyMPT: [1 6 1 6 1 6 1], keySearch: [1 6 1 6 1 6 1 16], matchLen: 7
 					// Case E-3. stack 2. keyMPT: [1 6 1 6 1 6 1], keySearch: [1 6 1 6 1 6 1 4 1 16], matchLen: 7
 					branchNode := db[node.flag_value.value]
