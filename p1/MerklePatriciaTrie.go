@@ -376,7 +376,7 @@ func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string, db ma
 
 // Create Ext-Branch-{Leaf/Ext} chain.
 func insert_helper_2(node Node, keyMPT, keySearch []uint8, new_value string, db map[string]Node) Node {
-
+	return node
 }
 
 func (mpt *MerklePatriciaTrie) Delete(key string) {
