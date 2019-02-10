@@ -136,6 +136,13 @@ func get_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) string
 	case 1:
 		// Branch
 
+		if keySearch[0] == 16 {
+			// Case B-1. Insert("a"), Insert("aa"), Get("a"), stack 2. keyMPT: [], keySearch: [16], matchLen: 2
+			// Case B-3. Insert("aa"), Insert("a"), Get("aa"), stack 2. keyMPT: [], keySearch: [16], matchLen: 2
+
+			return node.branch_value[16]
+		}
+
 		if node, ok := db[node.branch_value[keySearch[0]]]; ok {
 			// 'node' is now the next node.
 			// Case B-1. Insert("a"), Insert("aa"), Get("aa"), stack 2. keyMPT: [], keySearch: [6 1 16]
@@ -150,7 +157,7 @@ func get_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) string
 			return get_helper(node, keyMPT, keySearch[1:], db)
 		}
 		// If there is no link in the Branch.
-		return "Not found"
+		return ""
 
 	case 2:
 		// Ext or Leaf
@@ -159,17 +166,22 @@ func get_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) string
 
 		if matchLen != 0 {
 
+			if firstDigit := getFirstDigitOfAscii(node.flag_value.encoded_prefix); firstDigit == 0 || firstDigit == 1 || firstDigit == 2 {
+				// 'node' is Ext node.
+				// Case B-1. Insert("a"), Insert("aa"), Get("aa"), stack 1. keyMPT: [6 1], keySearch: [6 1 6 1 16], matchLen: 2
+				// Case B-1. Insert("a"), Insert("aa"), Get("a"), stack 1. keyMPT: [6 1], keySearch: [6 1 16], matchLen: 2
+				// Case B-2. Insert("a"), Insert("b"), Get("a"), stack 1. keyMPT: [6], keySearch: [6 1 16], matchLen: 1
+				// Case B-3. Insert("aa"), Insert("a"), Get("aa"), stack 1. keyMPT: [6 1], keySearch: [6 1 6 1 16], matchLen: 2
+				// Case D-1. Insert("a"), Insert("p"), Insert("abc"), Get("abc") stack 2. keyMPT: [1], keySearch: [1 6 2 6 3 16], matchLen: 1
+
+				node = db[node.flag_value.value]
+				// 'node' is now Branch node next to the Ext node.
+				return get_helper(node, keyMPT[matchLen:], keySearch[matchLen:], db)
+			}
+
+			// 'node' is Leaf node.
+
 			if keySearch[matchLen] == 16 {
-
-				if firstDigit := getFirstDigitOfAscii(node.flag_value.encoded_prefix); firstDigit == 0 || firstDigit == 1 || firstDigit == 2 {
-					// 'node' is Ext node.
-					// Case B-1. Insert("a"), Insert("aa"), Get("a"), stack 1. keyMPT: [6 1], keySearch: [6 1 16], matchLen: 2
-
-					node = db[node.flag_value.value]
-					// 'node' is now Branch node next to the Ext node.
-					return node.branch_value[16]
-				}
-				// 'node' is Leaf node.
 				// Case A. Insert("a"), Get("a"). keyMPT: [6 1], keySearch: [6 1 16], matchLen: 2
 				// Case B-1. Insert("a"), Insert("aa"), Get("aa"), stack 3. keyMPT: [1], keySearch: [1 16], matchLen: 1
 				// Case B-3. Insert("aa"), Insert("a"), Get("aa"), stack 3. keyMPT: [1], keySearch: [1 16], matchLen: 1
@@ -179,19 +191,8 @@ func get_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) string
 				return node.flag_value.value
 			}
 
-			if firstDigit := getFirstDigitOfAscii(node.flag_value.encoded_prefix); firstDigit == 0 || firstDigit == 1 || firstDigit == 2 {
-				// 'node' is Ext node.
-				// Case B-1. Insert("a"), Insert("aa"), Get("aa"), stack 1. keyMPT: [6 1], keySearch: [6 1 6 1 16], matchLen: 2
-				// Case B-2. Insert("a"), Insert("b"), Get("a"), stack 1. keyMPT: [6], keySearch: [6 1 16], matchLen: 1
-				// Case B-3. Insert("aa"), Insert("a"), Get("aa"), stack 1. keyMPT: [6 1], keySearch: [6 1 6 1 16], matchLen: 2
-				// Case D-1. Insert("a"), Insert("p"), Insert("abc"), Get("abc") stack 2. keyMPT: [1], keySearch: [1 6 2 6 3 16], matchLen: 1
-
-				node = db[node.flag_value.value]
-				// 'node' is now Branch node next to the Ext node.
-				return get_helper(node, keyMPT[matchLen:], keySearch[matchLen:], db)
-			}
 			// 'node' is Leaf node and keySearch still has hex number.
-			return "Not found."
+			return ""
 
 		} else if matchLen == 0 {
 
@@ -199,12 +200,12 @@ func get_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) string
 				// Case B-2. Insert("a"), Insert("b"), Get("a"), stack 3. keyMPT: [], keySearch: [16], matchLen: 0
 				return node.flag_value.value
 			}
-			return "Not found."
+			return ""
 		}
 
 	}
 
-	return "Not found."
+	return ""
 }
 
 func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
@@ -289,6 +290,7 @@ func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string, db ma
 
 				if len(keyMPT) == matchLen {
 					// Case E-2. stack 2. keyMPT: [1 6 1 6 1 6 1], keySearch: [1 6 1 6 1 6 1 16], matchLen: 7
+					// Case E-3. stack 2. keyMPT: [1 6 1 6 1 6 1], keySearch: [1 6 1 6 1 6 1 4 1 16], matchLen: 7
 					branchNode := db[node.flag_value.value]
 					branchNode = insert_helper(branchNode, nil, keySearch[matchLen:], new_value, db)
 					node.flag_value.value = putNodeInDb(branchNode, db)
