@@ -132,6 +132,7 @@ func get_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) string
 	switch nodeType {
 	case 0:
 		// Null node
+
 		return ""
 	case 1:
 		// Branch
@@ -222,7 +223,7 @@ func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 	keyMPT := compact_decode(encodedPrefix)
 
 	rootNode = insert_helper(rootNode, keyMPT, keySearch, new_value, db)
-	updateMPT(mpt, rootNode)
+	mpt.root = putNodeInDb(rootNode, db)
 
 	return
 }
@@ -260,6 +261,7 @@ func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string, db ma
 			node.branch_value[keySearch[0]] = putNodeInDb(nextNode, db)
 			return node
 		}
+
 		// There is no link in the Branch.
 		// Case D-3. Insert("a"), Insert("p"), Insert("A"), Get("A"). keyMPT: [], keySearch: [4 1 16]
 		leafNode := createNewLeafOrExtNode(2, keySearch[1:], new_value)
@@ -378,12 +380,6 @@ func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string, db ma
 
 func (mpt *MerklePatriciaTrie) Delete(key string) {
 	// TODO
-}
-
-func updateMPT(mpt *MerklePatriciaTrie, node Node) {
-	hash := node.hash_node()
-	mpt.db[hash] = node
-	mpt.root = hash
 }
 
 func createNewLeafOrExtNode(nodeType int, keyHex []uint8, newValue string) Node {
