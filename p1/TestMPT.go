@@ -35,3 +35,10 @@ func Test_getFirstDigitOfAscii(a []uint8) uint8 {
 	fmt.Println(ret)
 	return ret
 }
+
+func Test_isOnlyOneValueInBranch(array [17]string) bool {
+	node := Node{node_type: 1, branch_value: array}
+	ret := isOnlyOneValueInBranch(node)
+	fmt.Println(ret)
+	return ret
+}

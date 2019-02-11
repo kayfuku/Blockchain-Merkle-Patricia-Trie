@@ -94,6 +94,17 @@ func Test(t *testing.T) {
 	// b = []uint8{2, 2, 3, 4}
 	// p1.Test_prefixLen(a, b) // 4
 
+	// // Test isOnlyOneValueInBranch()
+	// fmt.Println("Test isOnlyOneValueInBranch(): ")
+	// array := [17]string{}
+	// p1.Test_isOnlyOneValueInBranch(array) // true
+	// array[6] = "***"
+	// p1.Test_isOnlyOneValueInBranch(array) // true
+	// array[16] = "***"
+	// p1.Test_isOnlyOneValueInBranch(array) // false
+	// array[16] = ""
+	// p1.Test_isOnlyOneValueInBranch(array) // true
+
 	// Test Insert(), Get() start.
 	fmt.Println("Test Insert(), Get(): ")
 
@@ -104,7 +115,7 @@ func Test(t *testing.T) {
 	fmt.Println(ret) // ""
 
 	// Insert("a", "apple")
-	// Get("a")
+	// Get("a"), Delete("a")
 	fmt.Println("Insert(\"a\", \"apple\")")
 	mpt.Insert("a", "apple")
 	fmt.Println("Get(\"a\")")
@@ -124,7 +135,7 @@ func Test(t *testing.T) {
 	// Case A (Exact match):
 	// Insert("a", "apple")
 	// Insert("a", "orange")
-	// Get("a")
+	// Get("a"), Delete("a")
 	fmt.Println("Case A: ")
 	fmt.Println("Insert(\"a\", \"orange\")")
 	mpt.Insert("a", "orange")

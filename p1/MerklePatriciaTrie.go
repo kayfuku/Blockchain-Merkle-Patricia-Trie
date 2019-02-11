@@ -154,6 +154,7 @@ func get_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) string
 			keyMPT := compact_decode(encodedPrefix)
 			return get_helper(node, keyMPT, keySearch[1:], db)
 		}
+
 		// There is no link in the Branch.
 		return ""
 
@@ -395,21 +396,40 @@ func (mpt *MerklePatriciaTrie) Delete(key string) string {
 	encodedPrefix := rootNode.flag_value.encoded_prefix
 	keyMPT := compact_decode(encodedPrefix)
 
-	ret := delete_helper(&rootNode, keyMPT, keySearch, db)
-	mpt.root = putNodeInDb(rootNode, db)
+	newRootNode, ret := delete_helper(rootNode, keyMPT, keySearch, db)
+	mpt.root = putNodeInDb(newRootNode, db)
 
 	return ret
 }
-func delete_helper(node *Node, keyMPT, keySearch []uint8, db map[string]Node) string {
+func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (Node, string) {
 
-	nodeType := (*node).node_type
+	nodeType := node.node_type
 	switch nodeType {
 	case 0:
 		// Null node
 
-		return ""
+		return node, ""
 	case 1:
 		// Branch
+
+		if nextNode, ok := db[node.branch_value[keySearch[0]]]; ok {
+			// There is the next node in the Branch.
+			// 'nextNode' is the node next to the Branch.
+			// Case B-1. Insert("a"), Insert("aa"), Delete("aa"), stack 2. keyMPT: [], keySearch: [6 1 16]
+
+			encodedPrefix := nextNode.flag_value.encoded_prefix
+			keyMPT := compact_decode(encodedPrefix)
+			retNode, ret := delete_helper(nextNode, keyMPT, keySearch[1:], db)
+			if retNode.node_type == 0 {
+				node.branch_value[keySearch[0]] = ""
+
+			}
+
+			return node, ret
+		}
+
+		// There is no link in the Branch.
+		return node, ""
 
 	case 2:
 		// Ext or Leaf
@@ -418,16 +438,32 @@ func delete_helper(node *Node, keyMPT, keySearch []uint8, db map[string]Node) st
 
 		if matchLen != 0 {
 
+			if firstDigit := getFirstDigitOfAscii(node.flag_value.encoded_prefix); firstDigit == 0 || firstDigit == 1 || firstDigit == 2 {
+				// 'node' is Ext node.
+				// Case B-1. Insert("a"), Insert("aa"), Delete("aa"), stack 1. keyMPT: [6 1], keySearch: [6 1 6 1 16], matchLen: 2
+				// Case B-2. Insert("a"), Insert("b"), Get("a"), stack 1. keyMPT: [6], keySearch: [6 1 16], matchLen: 1
+				// Case B-3. Insert("aa"), Insert("a"), Get("aa"), stack 1. keyMPT: [6 1], keySearch: [6 1 6 1 16], matchLen: 2
+				// Case D-1. Insert("a"), Insert("p"), Insert("abc"), Get("abc") stack 2. keyMPT: [1], keySearch: [1 6 2 6 3 16], matchLen: 1
+
+				node = db[node.flag_value.value]
+				// 'node' is now Branch node next to the Ext node.
+				return delete_helper(node, keyMPT[matchLen:], keySearch[matchLen:], db)
+			}
+
 			// 'node' is Leaf node.
+
 			if keySearch[matchLen] == 16 && len(keyMPT) == matchLen {
-				// Just one node.
+				// Exact match.
+				// Case A. Just one node.
+				// Case B-1. Insert("a"), Insert("aa"), Get("aa"), stack 3. keyMPT: [1], keySearch: [1 16], matchLen: 1
+				delete(db, node.hash_node())
 				flagValue := Flag_value{encoded_prefix: nil, value: ""}
-				*node = Node{node_type: 0, branch_value: [17]string{}, flag_value: flagValue}
-				return ""
+				node = Node{node_type: 0, branch_value: [17]string{}, flag_value: flagValue}
+				return node, ""
 			}
 
 			// 'node' is Leaf node and keySearch is shorter or longer than keyMPT.
-			return "path_not_found"
+			return node, "path_not_found"
 
 		} else if matchLen == 0 {
 
@@ -435,7 +471,17 @@ func delete_helper(node *Node, keyMPT, keySearch []uint8, db map[string]Node) st
 
 	}
 
-	return "path_not_found"
+	return node, "path_not_found"
+}
+
+func isOnlyOneValueInBranch(node Node) bool {
+	count := 0
+	for _, str := range node.branch_value {
+		if str != "" {
+			count++
+		}
+	}
+	return count <= 1
 }
 
 func createNewLeafOrExtNode(nodeType int, keyHex []uint8, newValue string) Node {
