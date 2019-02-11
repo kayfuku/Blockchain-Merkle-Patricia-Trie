@@ -415,7 +415,7 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 		if nextNode, ok := db[node.branch_value[keySearch[0]]]; ok {
 			// There is the next node in the Branch.
 			// 'nextNode' is the node next to the Branch.
-			// Case B-1. Insert("a"), Insert("aa"), Delete("aa"), stack 2. keyMPT: [], keySearch: [6 1 16]
+			// Del-3. Insert("a"), Insert("aa"), Delete("aa"), stack 2. keyMPT: [], keySearch: [6 1 16]
 
 			encodedPrefix := nextNode.flag_value.encoded_prefix
 			keyMPT := compact_decode(encodedPrefix)
@@ -427,7 +427,7 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 					// Only one value.
 					if node.branch_value[16] != "" {
 						// Del-3
-						leafNode := createNewLeafOrExtNode(2, nil, oneValue)
+						leafNode := createNewLeafOrExtNode(2, []uint8{16}, oneValue)
 						return leafNode, ""
 
 					}
@@ -451,14 +451,15 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 
 			if firstDigit := getFirstDigitOfAscii(node.flag_value.encoded_prefix); firstDigit == 0 || firstDigit == 1 || firstDigit == 2 {
 				// 'node' is Ext node.
-				// Case B-1. Insert("a"), Insert("aa"), Delete("aa"), stack 1. keyMPT: [6 1], keySearch: [6 1 6 1 16], matchLen: 2
+				// Del-3. Insert("a"), Insert("aa"), Delete("aa"), stack 1. keyMPT: [6 1], keySearch: [6 1 6 1 16], matchLen: 2
 
-				node = db[node.flag_value.value]
+				branchNode := db[node.flag_value.value]
 				// 'node' is now Branch node next to the Ext node.
-				retNode, ret := delete_helper(node, keyMPT[matchLen:], keySearch[matchLen:], db)
-				if firstDigit := getFirstDigitOfAscii(node.flag_value.encoded_prefix); firstDigit == 3 || firstDigit == 4 || firstDigit == 5 {
-					// 'node' is Leaf.
-					retNode.flag_value.encoded_prefix = compact_encode(append(compact_decode(node.flag_value.encoded_prefix), 16))
+				retNode, ret := delete_helper(branchNode, keyMPT[matchLen:], keySearch[matchLen:], db)
+				if firstDigit := getFirstDigitOfAscii(retNode.flag_value.encoded_prefix); firstDigit == 3 || firstDigit == 4 || firstDigit == 5 {
+					// 'retNode' is Leaf.
+					// retNode.flag_value.encoded_prefix = compact_encode(append(compact_decode(node.flag_value.encoded_prefix), 16))
+					retNode.flag_value.encoded_prefix = compact_encode(append(keyMPT, 16))
 
 					return retNode, ret
 				}

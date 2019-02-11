@@ -184,6 +184,24 @@ func Test(t *testing.T) {
 			"Expected %s, but was %s", "orange", ret)
 	}
 
+	// Delete("aa")
+	fmt.Println("Del-3. Delete(\"aa\")")
+	mpt.Delete("aa")
+	fmt.Println("Get(\"a\")")
+	ret = mpt.Get("a")
+	fmt.Println(ret) // apple
+	if ret != "apple" {
+		t.Errorf("Del-3. Delete(\"aa\"): Insert(\"a\", \"apple\"), Insert(\"aa\", \"orange\"), Get(\"a\") \n"+
+			"Expected %s, but was %s", "apple", ret)
+	}
+	fmt.Println("Get(\"aa\")")
+	ret = mpt.Get("aa")
+	fmt.Println(ret) // ""
+	if ret != "" {
+		t.Errorf("Del-3. Delete(\"aa\"): Insert(\"a\", \"apple\"), Insert(\"aa\", \"orange\"), Get(\"aa\") \n"+
+			"Expected %s, but was %s", "", ret)
+	}
+
 	// Case B-2 (Partial match):
 	// Insert("a", "apple")
 	// Insert("b", "orange")
