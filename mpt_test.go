@@ -135,6 +135,13 @@ func Test(t *testing.T) {
 		t.Errorf("Case A (Exact match): Insert(\"a\", \"apple\"), Insert(\"a\", \"orange\"), Get(\"a\") \n"+
 			"Expected %s, but was %s", "orange", ret)
 	}
+	fmt.Println("Delete(\"a\")")
+	mpt.Delete("a")
+	ret = mpt.Get("a")
+	fmt.Println(ret) // ""
+	if ret != "" {
+		t.Errorf("Expected %s, but was %s", "", ret)
+	}
 
 	// Case B-1 (Partial match):
 	// Insert("a", "apple")
