@@ -128,6 +128,7 @@ func (mpt *MerklePatriciaTrie) Get(key string) string {
 	return get_helper(rootNode, keyMPT, keySearch, mpt.db)
 }
 func get_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) string {
+
 	nodeType := node.node_type
 	switch nodeType {
 	case 0:
@@ -182,7 +183,8 @@ func get_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) string
 
 			// 'node' is Leaf node.
 
-			if keySearch[matchLen] == 16 {
+			if keySearch[matchLen] == 16 && len(keyMPT) == matchLen {
+				// Exact match.
 				// Case A. Insert("a"), Get("a"). keyMPT: [6 1], keySearch: [6 1 16], matchLen: 2
 				// Case B-1. Insert("a"), Insert("aa"), Get("aa"), stack 3. keyMPT: [1], keySearch: [1 16], matchLen: 1
 				// Case B-3. Insert("aa"), Insert("a"), Get("aa"), stack 3. keyMPT: [1], keySearch: [1 16], matchLen: 1
@@ -192,7 +194,7 @@ func get_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) string
 				return node.flag_value.value
 			}
 
-			// 'node' is Leaf node and keySearch still has hex number.
+			// 'node' is Leaf node and keySearch is shorter or longer than keyMPT.
 			return ""
 
 		} else if matchLen == 0 {
@@ -378,8 +380,49 @@ func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string, db ma
 	return node
 }
 
-func (mpt *MerklePatriciaTrie) Delete(key string) {
+func (mpt *MerklePatriciaTrie) Delete(key string) string {
 	// TODO
+	if key == "" {
+		return ""
+	}
+
+	keySearch := convert_string_to_hex(key)
+
+	db := mpt.db
+	rootNode := db[mpt.root]
+	encodedPrefix := rootNode.flag_value.encoded_prefix
+	keyMPT := compact_decode(encodedPrefix)
+
+	ret := delete_helper(rootNode, keyMPT, keySearch, db)
+	mpt.root = putNodeInDb(rootNode, db)
+
+	return ret
+}
+func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) string {
+
+	nodeType := node.node_type
+	switch nodeType {
+	case 0:
+		// Null node
+
+		return ""
+	case 1:
+		// Branch
+
+	case 2:
+		// Ext or Leaf
+
+		matchLen := prefixLen(keySearch, keyMPT)
+
+		if matchLen != 0 {
+
+		} else if matchLen == 0 {
+
+		}
+
+	}
+
+	return "path_not_found"
 }
 
 func createNewLeafOrExtNode(nodeType int, keyHex []uint8, newValue string) Node {
