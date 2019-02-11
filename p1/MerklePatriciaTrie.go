@@ -104,11 +104,6 @@ func compact_decode(encoded_arr []uint8) []uint8 {
 		hex_array[i*2+1] = ascii % 16
 	}
 
-	// Append 16 if it is Leaf.
-	// if hex_array[0] >= 2 {
-	// 	hex_array = append(hex_array, 16)
-	// }
-
 	cut := 2 - hex_array[0]&1
 	return hex_array[cut:]
 }
@@ -146,6 +141,7 @@ func get_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) string
 		}
 
 		if node, ok := db[node.branch_value[keySearch[0]]]; ok {
+			// There is the next node in the Branch.
 			// 'node' is now the next node.
 			// Case B-1. Insert("a"), Insert("aa"), Get("aa"), stack 2. keyMPT: [], keySearch: [6 1 16]
 			// Case B-2. Insert("a"), Insert("b"), Get("a"), stack 2. keyMPT: [], keySearch: [1 16]
@@ -158,7 +154,7 @@ func get_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) string
 			keyMPT := compact_decode(encodedPrefix)
 			return get_helper(node, keyMPT, keySearch[1:], db)
 		}
-		// If there is no link in the Branch.
+		// There is no link in the Branch.
 		return ""
 
 	case 2:
@@ -224,8 +220,9 @@ func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 	encodedPrefix := rootNode.flag_value.encoded_prefix
 	keyMPT := compact_decode(encodedPrefix)
 
-	rootNode = insert_helper(rootNode, keyMPT, keySearch, new_value, db)
-	mpt.root = putNodeInDb(rootNode, db)
+	newRootNode := insert_helper(rootNode, keyMPT, keySearch, new_value, db)
+	// delete(db, mpt.root)
+	mpt.root = putNodeInDb(newRootNode, db)
 
 	return
 }
@@ -260,6 +257,7 @@ func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string, db ma
 			encodedPrefix := nextNode.flag_value.encoded_prefix
 			keyMPT := compact_decode(encodedPrefix)
 			nextNode = insert_helper(nextNode, keyMPT, keySearch[1:], new_value, db)
+			delete(db, node.hash_node())
 			node.branch_value[keySearch[0]] = putNodeInDb(nextNode, db)
 			return node
 		}
@@ -267,6 +265,7 @@ func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string, db ma
 		// There is no link in the Branch.
 		// Case D-3. Insert("a"), Insert("p"), Insert("A"), Get("A"). keyMPT: [], keySearch: [4 1 16]
 		leafNode := createNewLeafOrExtNode(2, keySearch[1:], new_value)
+		delete(db, node.hash_node())
 		node.branch_value[keySearch[0]] = putNodeInDb(leafNode, db)
 		return node
 
@@ -286,6 +285,7 @@ func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string, db ma
 					extNode1 := createNewLeafOrExtNode(2, keyMPT[:matchLen], "")
 					branchNode := Node{node_type: 1, branch_value: [17]string{}}
 					extNode2 := createNewLeafOrExtNode(2, keyMPT[:matchLen], node.flag_value.value)
+					delete(db, node.hash_node())
 					branchNode.branch_value[keyMPT[matchLen]] = putNodeInDb(extNode2, db)
 					branchNode.branch_value[16] = new_value
 					extNode1.flag_value.value = putNodeInDb(branchNode, db)
@@ -299,6 +299,7 @@ func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string, db ma
 					// Case E-3. stack 2. keyMPT: [1 6 1 6 1 6 1], keySearch: [1 6 1 6 1 6 1 4 1 16], matchLen: 7
 					branchNode := db[node.flag_value.value]
 					branchNode = insert_helper(branchNode, nil, keySearch[matchLen:], new_value, db)
+					delete(db, node.hash_node())
 					node.flag_value.value = putNodeInDb(branchNode, db)
 
 					return node
@@ -358,6 +359,7 @@ func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string, db ma
 				// Case C (Mismatch).
 				// keyMPT: [6 1], keySearch: [7 0 16], matchLen: 0
 				leafNode := createNewLeafOrExtNode(2, keySearch[matchLen+1:], new_value)
+				delete(db, node.hash_node())
 				branchNode.branch_value[keySearch[matchLen]] = putNodeInDb(leafNode, db)
 
 				if _, ok := db[node.flag_value.value]; ok {
@@ -415,6 +417,15 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) str
 		matchLen := prefixLen(keySearch, keyMPT)
 
 		if matchLen != 0 {
+
+			// 'node' is Leaf node.
+			if keySearch[matchLen] == 16 && len(keyMPT) == matchLen {
+				// A.
+
+			}
+
+			// 'node' is Leaf node and keySearch is shorter or longer than keyMPT.
+			return "path_not_found"
 
 		} else if matchLen == 0 {
 
