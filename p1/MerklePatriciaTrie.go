@@ -406,11 +406,11 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 	nodeType := node.node_type
 	switch nodeType {
 	case 0:
-		// Null node
+		// 'node' is Null node.
 
 		return node, ""
 	case 1:
-		// Branch
+		// 'node' is Branch.
 
 		if nextNode, ok := db[node.branch_value[keySearch[0]]]; ok {
 			// There is the next node in the Branch.
@@ -421,7 +421,12 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 			keyMPT := compact_decode(encodedPrefix)
 			retNode, ret := delete_helper(nextNode, keyMPT, keySearch[1:], db)
 			if retNode.node_type == 0 {
-				node.branch_value[keySearch[0]] = ""
+				// 'retNode' is Null node.
+				// node.branch_value[keySearch[0]] = ""
+				// if getOnlyOneValueInBranch(node) {
+				// 	leafNode := createNewLeafOrExtNode(2, nil, node.branch_value[16])
+				// 	return leafNode, ""
+				// }
 
 			}
 
@@ -432,7 +437,7 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 		return node, ""
 
 	case 2:
-		// Ext or Leaf
+		// 'node' is Ext or Leaf.
 
 		matchLen := prefixLen(keySearch, keyMPT)
 
@@ -441,13 +446,18 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 			if firstDigit := getFirstDigitOfAscii(node.flag_value.encoded_prefix); firstDigit == 0 || firstDigit == 1 || firstDigit == 2 {
 				// 'node' is Ext node.
 				// Case B-1. Insert("a"), Insert("aa"), Delete("aa"), stack 1. keyMPT: [6 1], keySearch: [6 1 6 1 16], matchLen: 2
-				// Case B-2. Insert("a"), Insert("b"), Get("a"), stack 1. keyMPT: [6], keySearch: [6 1 16], matchLen: 1
-				// Case B-3. Insert("aa"), Insert("a"), Get("aa"), stack 1. keyMPT: [6 1], keySearch: [6 1 6 1 16], matchLen: 2
-				// Case D-1. Insert("a"), Insert("p"), Insert("abc"), Get("abc") stack 2. keyMPT: [1], keySearch: [1 6 2 6 3 16], matchLen: 1
 
 				node = db[node.flag_value.value]
 				// 'node' is now Branch node next to the Ext node.
-				return delete_helper(node, keyMPT[matchLen:], keySearch[matchLen:], db)
+				retNode, ret := delete_helper(node, keyMPT[matchLen:], keySearch[matchLen:], db)
+				if firstDigit := getFirstDigitOfAscii(node.flag_value.encoded_prefix); firstDigit == 3 || firstDigit == 4 || firstDigit == 5 {
+					// 'node' is Leaf.
+					retNode.flag_value.encoded_prefix = compact_encode(append(compact_decode(node.flag_value.encoded_prefix), 16))
+
+					return retNode, ret
+				}
+				node.flag_value.value = putNodeInDb(retNode, db)
+				return node, ret
 			}
 
 			// 'node' is Leaf node.
@@ -474,14 +484,16 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 	return node, "path_not_found"
 }
 
-func isOnlyOneValueInBranch(node Node) bool {
+func getOnlyOneValueInBranch(node Node) (bool, string) {
 	count := 0
+	oneValue := ""
 	for _, str := range node.branch_value {
 		if str != "" {
+			oneValue = str
 			count++
 		}
 	}
-	return count <= 1
+	return count <= 1, oneValue
 }
 
 func createNewLeafOrExtNode(nodeType int, keyHex []uint8, newValue string) Node {

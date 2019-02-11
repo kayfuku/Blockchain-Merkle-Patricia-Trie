@@ -94,16 +94,16 @@ func Test(t *testing.T) {
 	// b = []uint8{2, 2, 3, 4}
 	// p1.Test_prefixLen(a, b) // 4
 
-	// // Test isOnlyOneValueInBranch()
-	// fmt.Println("Test isOnlyOneValueInBranch(): ")
+	// // Test getOnlyOneValueInBranch()
+	// fmt.Println("Test getOnlyOneValueInBranch(): ")
 	// array := [17]string{}
-	// p1.Test_isOnlyOneValueInBranch(array) // true
+	// p1.Test_getOnlyOneValueInBranch(array) // true
 	// array[6] = "***"
-	// p1.Test_isOnlyOneValueInBranch(array) // true
+	// p1.Test_getOnlyOneValueInBranch(array) // true ***
 	// array[16] = "***"
-	// p1.Test_isOnlyOneValueInBranch(array) // false
+	// p1.Test_getOnlyOneValueInBranch(array) // false ***
 	// array[16] = ""
-	// p1.Test_isOnlyOneValueInBranch(array) // true
+	// p1.Test_getOnlyOneValueInBranch(array) // true ***
 
 	// Test Insert(), Get() start.
 	fmt.Println("Test Insert(), Get(): ")
