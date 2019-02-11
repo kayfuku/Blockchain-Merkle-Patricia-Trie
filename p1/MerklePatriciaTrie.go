@@ -422,11 +422,17 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 			retNode, ret := delete_helper(nextNode, keyMPT, keySearch[1:], db)
 			if retNode.node_type == 0 {
 				// 'retNode' is Null node.
-				// node.branch_value[keySearch[0]] = ""
-				// if getOnlyOneValueInBranch(node) {
-				// 	leafNode := createNewLeafOrExtNode(2, nil, node.branch_value[16])
-				// 	return leafNode, ""
-				// }
+				node.branch_value[keySearch[0]] = ""
+				if b, oneValue := getOnlyOneValueInBranch(node); b {
+					// Only one value.
+					if node.branch_value[16] != "" {
+						// Del-3
+						leafNode := createNewLeafOrExtNode(2, nil, oneValue)
+						return leafNode, ""
+
+					}
+
+				}
 
 			}
 

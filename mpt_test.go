@@ -97,13 +97,13 @@ func Test(t *testing.T) {
 	// // Test getOnlyOneValueInBranch()
 	// fmt.Println("Test getOnlyOneValueInBranch(): ")
 	// array := [17]string{}
-	// p1.Test_getOnlyOneValueInBranch(array) // true
+	// p1.Test_getOnlyOneValueInBranch(array) // ret: true str:
 	// array[6] = "***"
-	// p1.Test_getOnlyOneValueInBranch(array) // true ***
-	// array[16] = "***"
-	// p1.Test_getOnlyOneValueInBranch(array) // false ***
-	// array[16] = ""
-	// p1.Test_getOnlyOneValueInBranch(array) // true ***
+	// p1.Test_getOnlyOneValueInBranch(array) // ret: true str: ***
+	// array[16] = "last"
+	// p1.Test_getOnlyOneValueInBranch(array) // ret: false str: last
+	// array[6] = ""
+	// p1.Test_getOnlyOneValueInBranch(array) // ret: true str: last
 
 	// Test Insert(), Get() start.
 	fmt.Println("Test Insert(), Get(): ")
