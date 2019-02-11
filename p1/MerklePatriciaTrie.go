@@ -319,7 +319,7 @@ func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string, db ma
 			// Case D-1. stack 2. keyMPT: [1], keySearch: [1 6 2 6 3 16], matchLen: 1
 			extNode := createNewLeafOrExtNode(2, keyMPT[:matchLen], node.flag_value.value)
 			branchNode := insert_helper(extNode, keyMPT[matchLen:], keySearch[matchLen:], new_value, db)
-			if matchLen == len(keyMPT) {
+			if len(keyMPT) == matchLen {
 				// Case B-1.
 				// Case D-1.
 				branchNode.branch_value[16] = node.flag_value.value
