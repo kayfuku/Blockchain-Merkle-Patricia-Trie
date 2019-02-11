@@ -395,14 +395,14 @@ func (mpt *MerklePatriciaTrie) Delete(key string) string {
 	encodedPrefix := rootNode.flag_value.encoded_prefix
 	keyMPT := compact_decode(encodedPrefix)
 
-	ret := delete_helper(rootNode, keyMPT, keySearch, db)
+	ret := delete_helper(&rootNode, keyMPT, keySearch, db)
 	mpt.root = putNodeInDb(rootNode, db)
 
 	return ret
 }
-func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) string {
+func delete_helper(node *Node, keyMPT, keySearch []uint8, db map[string]Node) string {
 
-	nodeType := node.node_type
+	nodeType := (*node).node_type
 	switch nodeType {
 	case 0:
 		// Null node
@@ -420,8 +420,10 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) str
 
 			// 'node' is Leaf node.
 			if keySearch[matchLen] == 16 && len(keyMPT) == matchLen {
-				// A.
-
+				// Just one node.
+				flagValue := Flag_value{encoded_prefix: nil, value: ""}
+				*node = Node{node_type: 0, branch_value: [17]string{}, flag_value: flagValue}
+				return ""
 			}
 
 			// 'node' is Leaf node and keySearch is shorter or longer than keyMPT.
