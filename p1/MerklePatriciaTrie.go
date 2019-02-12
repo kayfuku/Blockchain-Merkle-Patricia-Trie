@@ -167,6 +167,11 @@ func get_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) string
 
 		if matchLen != 0 {
 
+			if len(keySearch) <= len(keyMPT) {
+				// keySearch is shorter than keyMPT.
+				return ""
+			}
+
 			if firstDigit := getFirstDigitOfAscii(node.flag_value.encoded_prefix); firstDigit == 0 || firstDigit == 1 || firstDigit == 2 {
 				// 'node' is Ext node.
 				// Case B-1. Insert("a"), Insert("aa"), Get("aa"), stack 1. keyMPT: [6 1], keySearch: [6 1 6 1 16], matchLen: 2
@@ -416,10 +421,11 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 
 		if keySearch[0] == 16 {
 			// Del-4. B-3. stack 2. Insert("aa"), Insert("a"), Delete("a"), stack 2. keyMPT: [], keySearch: [16], matchLen: 2
-
+			// Del-5. stack 2.
 			node.branch_value[16] = ""
+
 			if b, oneValue, index := getOnlyOneValueInBranch(node); b {
-				// Only one value in the Branch.
+				// Only one value in the Branch. Rebalance.
 				// The value is a link to the next node.
 				// Del-4. stack 2.
 				leftNode := db[oneValue]
@@ -430,7 +436,10 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 						append([]uint8{index},
 							append(compact_decode(leftNode.flag_value.encoded_prefix), 16)...))
 				} else {
-					// leftNode is Ext or Branch. TODO ***
+					// leftNode is Ext or Branch.
+					// Del-5.
+					leftNode.flag_value.encoded_prefix = compact_encode(
+						append([]uint8{index}, compact_decode(leftNode.flag_value.encoded_prefix)...))
 
 				}
 
@@ -451,8 +460,9 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 			if retNode.node_type == 0 {
 				// 'retNode' is Null node.
 				node.branch_value[keySearch[0]] = ""
+
 				if b, oneValue, index := getOnlyOneValueInBranch(node); b {
-					// Only one value in the Branch.
+					// Only one value in the Branch. Rebalance.
 					if node.branch_value[16] != "" {
 						// The value is in the last 16th elem.
 						// Del-3. stack 2.
@@ -504,15 +514,20 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 				// 'node' is now Branch node next to the Ext node.
 
 				retNode, ret := delete_helper(branchNode, keyMPT[matchLen:], keySearch[matchLen:], db)
-				if firstDigit := getFirstDigitOfAscii(retNode.flag_value.encoded_prefix); firstDigit == 3 || firstDigit == 4 || firstDigit == 5 {
+				if retNode.node_type == 1 {
+					// 'retNode' is Branch. Do nothing.
+					delete(db, node.hash_node())
+					node.flag_value.value = putNodeInDb(retNode, db)
+					return node, ret
+
+				} else if firstDigit := getFirstDigitOfAscii(retNode.flag_value.encoded_prefix); firstDigit == 3 || firstDigit == 4 || firstDigit == 5 {
 					// 'retNode' is Leaf.
 					retNode.flag_value.encoded_prefix = compact_encode(
 						append(keyMPT,
 							append(compact_decode(retNode.flag_value.encoded_prefix), 16)...))
-					return retNode, ret
 
 				} else {
-					// 'retNode' is Ext or Branch.
+					// 'retNode' is Ext.
 					// Del-2.
 					retNode.flag_value.encoded_prefix = compact_encode(
 						append(keyMPT, compact_decode(retNode.flag_value.encoded_prefix)...))
