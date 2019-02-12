@@ -423,16 +423,19 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 			if retNode.node_type == 0 {
 				// 'retNode' is Null node.
 				node.branch_value[keySearch[0]] = ""
-				if b, oneValue := getOnlyOneValueInBranch(node); b {
-					// Only one value.
-					if node.branch_value[16] != "" {
-						// Del-3
-						leafNode := createNewLeafOrExtNode(2, []uint8{16}, oneValue)
-						return leafNode, ""
+				// if b, oneValue, index := getOnlyOneValueInBranch(node); b {
+				// 	// Only one value in the Branch.
+				// 	if node.branch_value[16] != "" {
+				// 		// The value is in the last 16th elem.
+				// 		// Del-3
+				// 		leafNode := createNewLeafOrExtNode(2, []uint8{16}, oneValue)
+				// 		return leafNode, ""
+				// 	}
+				// 	// The value is a link to the next node.
+				// 	leftNode := db[oneValue]
+				// 	index = 1
 
-					}
-
-				}
+				// }
 
 			}
 
@@ -491,16 +494,18 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 	return node, "path_not_found"
 }
 
-func getOnlyOneValueInBranch(node Node) (bool, string) {
+func getOnlyOneValueInBranch(node Node) (bool, string, int) {
 	count := 0
+	index := 0
 	oneValue := ""
-	for _, str := range node.branch_value {
+	for i, str := range node.branch_value {
 		if str != "" {
+			index = i
 			oneValue = str
 			count++
 		}
 	}
-	return count <= 1, oneValue
+	return count <= 1, oneValue, index
 }
 
 func createNewLeafOrExtNode(nodeType int, keyHex []uint8, newValue string) Node {

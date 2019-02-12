@@ -38,7 +38,7 @@ func Test_getFirstDigitOfAscii(a []uint8) uint8 {
 
 func Test_getOnlyOneValueInBranch(array [17]string) bool {
 	node := Node{node_type: 1, branch_value: array}
-	ret, str := getOnlyOneValueInBranch(node)
-	fmt.Printf("ret: %v str: %s\n", ret, str)
+	ret, str, index := getOnlyOneValueInBranch(node)
+	fmt.Printf("ret: %v str: %s index: %d\n", ret, str, index)
 	return ret
 }

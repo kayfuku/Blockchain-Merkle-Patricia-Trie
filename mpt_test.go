@@ -97,13 +97,13 @@ func Test(t *testing.T) {
 	// // Test getOnlyOneValueInBranch()
 	// fmt.Println("Test getOnlyOneValueInBranch(): ")
 	// array := [17]string{}
-	// p1.Test_getOnlyOneValueInBranch(array) // ret: true str:
+	// p1.Test_getOnlyOneValueInBranch(array) // ret: true str:  index: 0
 	// array[6] = "***"
-	// p1.Test_getOnlyOneValueInBranch(array) // ret: true str: ***
+	// p1.Test_getOnlyOneValueInBranch(array) // ret: true str: *** index: 6
 	// array[16] = "last"
-	// p1.Test_getOnlyOneValueInBranch(array) // ret: false str: last
+	// p1.Test_getOnlyOneValueInBranch(array) // ret: false str: last index: 16
 	// array[6] = ""
-	// p1.Test_getOnlyOneValueInBranch(array) // ret: true str: last
+	// p1.Test_getOnlyOneValueInBranch(array) // ret: true str: last index: 16
 
 	// Test Insert(), Get() start.
 	fmt.Println("Test Insert(), Get(): ")
@@ -184,23 +184,23 @@ func Test(t *testing.T) {
 			"Expected %s, but was %s", "orange", ret)
 	}
 
-	// Delete("aa")
-	fmt.Println("Del-3. Delete(\"aa\")")
-	mpt.Delete("aa")
-	fmt.Println("Get(\"a\")")
-	ret = mpt.Get("a")
-	fmt.Println(ret) // apple
-	if ret != "apple" {
-		t.Errorf("Del-3. Delete(\"aa\"): Insert(\"a\", \"apple\"), Insert(\"aa\", \"orange\"), Get(\"a\") \n"+
-			"Expected %s, but was %s", "apple", ret)
-	}
-	fmt.Println("Get(\"aa\")")
-	ret = mpt.Get("aa")
-	fmt.Println(ret) // ""
-	if ret != "" {
-		t.Errorf("Del-3. Delete(\"aa\"): Insert(\"a\", \"apple\"), Insert(\"aa\", \"orange\"), Get(\"aa\") \n"+
-			"Expected %s, but was %s", "", ret)
-	}
+	// // Del-3.
+	// fmt.Println("Del-3. Delete(\"aa\")")
+	// mpt.Delete("aa")
+	// fmt.Println("Get(\"a\")")
+	// ret = mpt.Get("a")
+	// fmt.Println(ret) // apple
+	// if ret != "apple" {
+	// 	t.Errorf("Del-3. Delete(\"aa\"): Insert(\"a\", \"apple\"), Insert(\"aa\", \"orange\"), Get(\"a\") \n"+
+	// 		"Expected %s, but was %s", "apple", ret)
+	// }
+	// fmt.Println("Get(\"aa\")")
+	// ret = mpt.Get("aa")
+	// fmt.Println(ret) // ""
+	// if ret != "" {
+	// 	t.Errorf("Del-3. Delete(\"aa\"): Insert(\"a\", \"apple\"), Insert(\"aa\", \"orange\"), Get(\"aa\") \n"+
+	// 		"Expected %s, but was %s", "", ret)
+	// }
 
 	// Case B-2 (Partial match):
 	// Insert("a", "apple")
@@ -231,6 +231,24 @@ func Test(t *testing.T) {
 		t.Errorf("Case B-2 (Partial match): Insert(\"a\", \"apple\"), Insert(\"b\", \"orange\"), Get(\"b\") \n"+
 			"Expected %s, but was %s", "orange", ret)
 	}
+
+	// // Del-1.
+	// fmt.Println("Del-1. Delete(\"b\")")
+	// mpt.Delete("b")
+	// fmt.Println("Get(\"a\")")
+	// ret = mpt.Get("a")
+	// fmt.Println(ret) // ??
+	// if ret != "apple" {
+	// 	t.Errorf("Del-1. Delete(\"b\"): Insert(\"a\", \"apple\"), Insert(\"b\", \"orange\"), Get(\"a\") \n"+
+	// 		"Expected %s, but was %s", "apple", ret)
+	// }
+	// fmt.Println("Get(\"b\")")
+	// ret = mpt.Get("b")
+	// fmt.Println(ret) // ??
+	// if ret != "" {
+	// 	t.Errorf("Del-1. Delete(\"b\"): Insert(\"a\", \"apple\"), Insert(\"b\", \"orange\"), Get(\"b\") \n"+
+	// 		"Expected %s, but was %s", "", ret)
+	// }
 
 	// Case B-3 (Partial match):
 	// Insert("aa", "apple")
