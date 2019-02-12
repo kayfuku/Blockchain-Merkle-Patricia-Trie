@@ -436,9 +436,9 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 				if leftNode.node_type == 1 {
 					// 'leftNode' is Branch.
 					// Del-7.
-					// delete(db, node.hash_node())
-					// node.branch_value.value = putNodeInDb(leftNode, db)
-					// return leftNode, ""
+					delete(db, node.hash_node())
+					extNode := createNewLeafOrExtNode(2, []uint8{index}, oneValue)
+					return extNode, ""
 
 				} else if firstDigit := getFirstDigitOfAscii(leftNode.flag_value.encoded_prefix); firstDigit == 3 || firstDigit == 4 || firstDigit == 5 {
 					// leftNode is Leaf.
@@ -486,7 +486,7 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 					leftNode := db[oneValue]
 					// 'leftNode' could be Leaf, Ext, or Branch.
 					if leftNode.node_type == 1 {
-						// 'retNode' is Branch.
+						// 'leftNode' is Branch.
 						// Del-6.
 						delete(db, node.hash_node())
 						extNode := createNewLeafOrExtNode(2, []uint8{index}, oneValue)
@@ -549,6 +549,7 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 				} else {
 					// 'retNode' is Ext.
 					// Del-2.
+					// Del-7.
 					retNode.flag_value.encoded_prefix = compact_encode(
 						append(keyMPT, compact_decode(retNode.flag_value.encoded_prefix)...))
 				}
