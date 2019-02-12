@@ -468,10 +468,11 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 						leftNode.flag_value.encoded_prefix = compact_encode(
 							append([]uint8{index},
 								append(compact_decode(leftNode.flag_value.encoded_prefix), 16)...))
-						return leftNode, ret
 					} else {
-						// leftNode is Ext or Branch. TODO ***
-
+						// leftNode is Ext or Branch.
+						// Del-2.
+						leftNode.flag_value.encoded_prefix = compact_encode(
+							append([]uint8{index}, compact_decode(leftNode.flag_value.encoded_prefix)...))
 					}
 
 					return leftNode, ret
@@ -498,6 +499,7 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 				// Del-3. Insert("a"), Insert("aa"), Delete("aa"), stack 1. keyMPT: [6 1], keySearch: [6 1 6 1 16], matchLen: 2
 				// Del-1. Insert("a"), Insert("b"), Delete("b"), stack 1.
 				// Del-4. stack 1.
+				// Del-2. stack 1.
 				branchNode := db[node.flag_value.value]
 				// 'node' is now Branch node next to the Ext node.
 
@@ -507,16 +509,17 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 					retNode.flag_value.encoded_prefix = compact_encode(
 						append(keyMPT,
 							append(compact_decode(retNode.flag_value.encoded_prefix), 16)...))
-
 					return retNode, ret
+
 				} else {
-					// 'retNode' is not Leaf. TODO ***
-
+					// 'retNode' is Ext or Branch.
+					// Del-2.
+					retNode.flag_value.encoded_prefix = compact_encode(
+						append(keyMPT, compact_decode(retNode.flag_value.encoded_prefix)...))
 				}
-
-				// ??
+				delete(db, node.hash_node())
 				node.flag_value.value = putNodeInDb(retNode, db)
-				return node, ret
+				return retNode, ret
 			}
 
 			// 'node' is Leaf node.

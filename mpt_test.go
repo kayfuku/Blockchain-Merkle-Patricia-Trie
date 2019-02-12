@@ -776,23 +776,30 @@ func Test(t *testing.T) {
 			"Expected %s, but was %s", "banana", ret)
 	}
 
-	// // Del-2.
-	// fmt.Println("Del-2.")
-
-	// mpt.Delete("aa")
-	// fmt.Println("Get(\"a\")")
-	// ret = mpt.Get("a")
-	// fmt.Println(ret) // apple
-	// if ret != "apple" {
-	// 	t.Errorf("Del-2. Delete(\"aa\"): Insert(\"a\", \"apple\"), Insert(\"aa\", \"orange\"), Get(\"a\") \n"+
-	// 		"Expected %s, but was %s", "apple", ret)
-	// }
-	// fmt.Println("Get(\"aa\")")
-	// ret = mpt.Get("aa")
-	// fmt.Println(ret) // ""
-	// if ret != "" {
-	// 	t.Errorf("Del-2. Delete(\"aa\"): Insert(\"a\", \"apple\"), Insert(\"aa\", \"orange\"), Get(\"aa\") \n"+
-	// 		"Expected %s, but was %s", "", ret)
-	// }
+	// Del-2.
+	fmt.Println("Del-2.")
+	fmt.Println("Delete(\"aap\")")
+	mpt.Delete("aap")
+	fmt.Println("Get(\"aaa\")")
+	ret = mpt.Get("aaa")
+	fmt.Println(ret) // apple
+	if ret != "apple" {
+		t.Errorf("Del-2. Insert(\"aaa\", \"apple\"), Insert(\"aap\", \"orange\"), Insert(\"aaaa\", \"banana\"), Delete(\"aap\"), Get(\"aaa\") \n"+
+			"Expected %s, but was %s", "apple", ret)
+	}
+	fmt.Println("Get(\"aaaa\")")
+	ret = mpt.Get("aaaa")
+	fmt.Println(ret) // banana
+	if ret != "banana" {
+		t.Errorf("Del-2. Insert(\"aaa\", \"apple\"), Insert(\"aap\", \"orange\"), Insert(\"aaaa\", \"banana\"), Delete(\"aap\"), Get(\"aaaa\") \n"+
+			"Expected %s, but was %s", "", ret)
+	}
+	fmt.Println("Get(\"aap\")")
+	ret = mpt.Get("aap")
+	fmt.Println(ret) // ""
+	if ret != "" {
+		t.Errorf("Del-2. Insert(\"aaa\", \"apple\"), Insert(\"aap\", \"orange\"), Insert(\"aaaa\", \"banana\"), Delete(\"aap\"), Get(\"aap\") \n"+
+			"Expected %s, but was %s", "", ret)
+	}
 
 }
