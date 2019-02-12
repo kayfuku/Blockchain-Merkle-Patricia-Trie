@@ -90,7 +90,7 @@ func compact_encode(hex_array []uint8) []uint8 {
 	return encoded_prefix
 }
 
-// If Leaf, ignore 16 at the end << why?
+// If Leaf, ignore 16 at the end
 func compact_decode(encoded_arr []uint8) []uint8 {
 	// TODO
 	if len(encoded_arr) == 0 {
@@ -104,6 +104,8 @@ func compact_decode(encoded_arr []uint8) []uint8 {
 		hex_array[i*2+1] = ascii % 16
 	}
 
+	// Remove prefix and return hex array /wo 16.
+	// If hex hex_array[0] is even, then cut first two. If hex hex_array[0] is odd, then cut first one.
 	cut := 2 - hex_array[0]&1
 	return hex_array[cut:]
 }
@@ -423,19 +425,22 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 			if retNode.node_type == 0 {
 				// 'retNode' is Null node.
 				node.branch_value[keySearch[0]] = ""
-				// if b, oneValue, index := getOnlyOneValueInBranch(node); b {
-				// 	// Only one value in the Branch.
-				// 	if node.branch_value[16] != "" {
-				// 		// The value is in the last 16th elem.
-				// 		// Del-3
-				// 		leafNode := createNewLeafOrExtNode(2, []uint8{16}, oneValue)
-				// 		return leafNode, ""
-				// 	}
-				// 	// The value is a link to the next node.
-				// 	leftNode := db[oneValue]
-				// 	index = 1
-
-				// }
+				if b, oneValue, index := getOnlyOneValueInBranch(node); b {
+					// Only one value in the Branch.
+					if node.branch_value[16] != "" {
+						// The value is in the last 16th elem.
+						// Del-3. stack 2.
+						leafNode := createNewLeafOrExtNode(2, []uint8{16}, oneValue)
+						return leafNode, ""
+					}
+					// The value is a link to the next node. 'leftNode' is Leaf of Ext.
+					// Del-1. stack 2.
+					leftNode := db[oneValue]
+					leftNode.flag_value.encoded_prefix = compact_encode(
+						append([]uint8{index},
+							append(compact_decode(leftNode.flag_value.encoded_prefix), 16)...))
+					return leftNode, ""
+				}
 
 			}
 
@@ -455,14 +460,17 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 			if firstDigit := getFirstDigitOfAscii(node.flag_value.encoded_prefix); firstDigit == 0 || firstDigit == 1 || firstDigit == 2 {
 				// 'node' is Ext node.
 				// Del-3. Insert("a"), Insert("aa"), Delete("aa"), stack 1. keyMPT: [6 1], keySearch: [6 1 6 1 16], matchLen: 2
-
+				// Del-1. Insert("a"), Insert("b"), Delete("b"), stack 1.
 				branchNode := db[node.flag_value.value]
 				// 'node' is now Branch node next to the Ext node.
+
 				retNode, ret := delete_helper(branchNode, keyMPT[matchLen:], keySearch[matchLen:], db)
 				if firstDigit := getFirstDigitOfAscii(retNode.flag_value.encoded_prefix); firstDigit == 3 || firstDigit == 4 || firstDigit == 5 {
 					// 'retNode' is Leaf.
 					// retNode.flag_value.encoded_prefix = compact_encode(append(compact_decode(node.flag_value.encoded_prefix), 16))
-					retNode.flag_value.encoded_prefix = compact_encode(append(keyMPT, 16))
+					retNode.flag_value.encoded_prefix = compact_encode(
+						append(keyMPT,
+							append(compact_decode(retNode.flag_value.encoded_prefix), 16)...))
 
 					return retNode, ret
 				}
@@ -474,8 +482,8 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 
 			if keySearch[matchLen] == 16 && len(keyMPT) == matchLen {
 				// Exact match.
-				// Case A. Just one node.
-				// Case B-1. Insert("a"), Insert("aa"), Get("aa"), stack 3. keyMPT: [1], keySearch: [1 16], matchLen: 1
+				// Del-0. Just one node.
+				// Del-3. Insert("a"), Insert("aa"), Get("aa"), stack 3. keyMPT: [1], keySearch: [1 16], matchLen: 1
 				delete(db, node.hash_node())
 				flagValue := Flag_value{encoded_prefix: nil, value: ""}
 				node = Node{node_type: 0, branch_value: [17]string{}, flag_value: flagValue}
@@ -494,13 +502,13 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 	return node, "path_not_found"
 }
 
-func getOnlyOneValueInBranch(node Node) (bool, string, int) {
+func getOnlyOneValueInBranch(node Node) (bool, string, uint8) {
 	count := 0
-	index := 0
+	var index uint8 = 0
 	oneValue := ""
 	for i, str := range node.branch_value {
 		if str != "" {
-			index = i
+			index = uint8(i)
 			oneValue = str
 			count++
 		}
