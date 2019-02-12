@@ -414,6 +414,30 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 	case 1:
 		// 'node' is Branch.
 
+		if keySearch[0] == 16 {
+			// Del-4. B-3. stack 2. Insert("aa"), Insert("a"), Delete("a"), stack 2. keyMPT: [], keySearch: [16], matchLen: 2
+
+			node.branch_value[16] = ""
+			if b, oneValue, index := getOnlyOneValueInBranch(node); b {
+				// Only one value in the Branch.
+				// The value is a link to the next node. 'leftNode' could be Leaf of Ext.
+				// Del-4. stack 2.
+				leftNode := db[oneValue]
+				if firstDigit := getFirstDigitOfAscii(leftNode.flag_value.encoded_prefix); firstDigit == 3 || firstDigit == 4 || firstDigit == 5 {
+					// leftNode is Leaf.
+					leftNode.flag_value.encoded_prefix = compact_encode(
+						append([]uint8{index},
+							append(compact_decode(leftNode.flag_value.encoded_prefix), 16)...))
+				} else {
+					// leftNode is not Leaf.
+
+				}
+
+				return leftNode, ""
+			}
+
+		}
+
 		if nextNode, ok := db[node.branch_value[keySearch[0]]]; ok {
 			// There is the next node in the Branch.
 			// 'nextNode' is the node next to the Branch.
@@ -431,24 +455,25 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 						// The value is in the last 16th elem.
 						// Del-3. stack 2.
 						leafNode := createNewLeafOrExtNode(2, []uint8{16}, oneValue)
-						return leafNode, ""
+						return leafNode, ret
 					}
-					// The value is a link to the next node. 'leftNode' is Leaf of Ext.
+					// The value is a link to the next node. 'leftNode' could be Leaf of Ext. TODO***
 					// Del-1. stack 2.
 					leftNode := db[oneValue]
 					leftNode.flag_value.encoded_prefix = compact_encode(
 						append([]uint8{index},
 							append(compact_decode(leftNode.flag_value.encoded_prefix), 16)...))
-					return leftNode, ""
+					return leftNode, ret
 				}
 
+				return node, ret
 			}
 
 			return node, ret
 		}
 
 		// There is no link in the Branch.
-		return node, ""
+		return node, "path_not_found"
 
 	case 2:
 		// 'node' is Ext or Leaf.
@@ -473,6 +498,9 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 							append(compact_decode(retNode.flag_value.encoded_prefix), 16)...))
 
 					return retNode, ret
+				} else {
+					// 'retNode' is not Leaf.
+
 				}
 				node.flag_value.value = putNodeInDb(retNode, db)
 				return node, ret
@@ -503,8 +531,7 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 				return node, ""
 			}
 
-			return node, ""
-
+			return node, "path_not_found"
 		}
 
 	}
