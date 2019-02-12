@@ -420,16 +420,17 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 			node.branch_value[16] = ""
 			if b, oneValue, index := getOnlyOneValueInBranch(node); b {
 				// Only one value in the Branch.
-				// The value is a link to the next node. 'leftNode' could be Leaf of Ext.
+				// The value is a link to the next node.
 				// Del-4. stack 2.
 				leftNode := db[oneValue]
+				// 'leftNode' could be Leaf, Ext, or Branch.
 				if firstDigit := getFirstDigitOfAscii(leftNode.flag_value.encoded_prefix); firstDigit == 3 || firstDigit == 4 || firstDigit == 5 {
 					// leftNode is Leaf.
 					leftNode.flag_value.encoded_prefix = compact_encode(
 						append([]uint8{index},
 							append(compact_decode(leftNode.flag_value.encoded_prefix), 16)...))
 				} else {
-					// leftNode is not Leaf. TODO ***
+					// leftNode is Ext or Branch. TODO ***
 
 				}
 
@@ -458,12 +459,21 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 						leafNode := createNewLeafOrExtNode(2, []uint8{16}, oneValue)
 						return leafNode, ret
 					}
-					// The value is a link to the next node. 'leftNode' could be Leaf of Ext. TODO***
+					// The value is a link to the next node.
 					// Del-1. stack 2.
 					leftNode := db[oneValue]
-					leftNode.flag_value.encoded_prefix = compact_encode(
-						append([]uint8{index},
-							append(compact_decode(leftNode.flag_value.encoded_prefix), 16)...))
+					// 'leftNode' could be Leaf, Ext, or Branch.
+					if firstDigit := getFirstDigitOfAscii(leftNode.flag_value.encoded_prefix); firstDigit == 3 || firstDigit == 4 || firstDigit == 5 {
+						// leftNode is Leaf.
+						leftNode.flag_value.encoded_prefix = compact_encode(
+							append([]uint8{index},
+								append(compact_decode(leftNode.flag_value.encoded_prefix), 16)...))
+						return leftNode, ret
+					} else {
+						// leftNode is Ext or Branch. TODO ***
+
+					}
+
 					return leftNode, ret
 				}
 
