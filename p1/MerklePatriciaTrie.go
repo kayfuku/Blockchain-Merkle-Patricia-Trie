@@ -422,15 +422,25 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 		if keySearch[0] == 16 {
 			// Del-4. B-3. stack 2. Insert("aa"), Insert("a"), Delete("a"), stack 2. keyMPT: [], keySearch: [16], matchLen: 2
 			// Del-5. stack 2.
+			// Del-7.
 			node.branch_value[16] = ""
 
 			if b, oneValue, index := getOnlyOneValueInBranch(node); b {
 				// Only one value in the Branch. Rebalance.
 				// The value is a link to the next node.
 				// Del-4. stack 2.
+				// Del-7.
+
 				leftNode := db[oneValue]
 				// 'leftNode' could be Leaf, Ext, or Branch.
-				if firstDigit := getFirstDigitOfAscii(leftNode.flag_value.encoded_prefix); firstDigit == 3 || firstDigit == 4 || firstDigit == 5 {
+				if leftNode.node_type == 1 {
+					// 'leftNode' is Branch.
+					// Del-7.
+					// delete(db, node.hash_node())
+					// node.branch_value.value = putNodeInDb(leftNode, db)
+					// return leftNode, ""
+
+				} else if firstDigit := getFirstDigitOfAscii(leftNode.flag_value.encoded_prefix); firstDigit == 3 || firstDigit == 4 || firstDigit == 5 {
 					// leftNode is Leaf.
 					leftNode.flag_value.encoded_prefix = compact_encode(
 						append([]uint8{index},
@@ -472,14 +482,15 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 					}
 					// The value is a link to the next node.
 					// Del-1. stack 2.
+
 					leftNode := db[oneValue]
 					// 'leftNode' could be Leaf, Ext, or Branch.
 					if leftNode.node_type == 1 {
 						// 'retNode' is Branch.
 						// Del-6.
 						delete(db, node.hash_node())
-						node.flag_value.value = putNodeInDb(leftNode, db)
-						return node, ret
+						extNode := createNewLeafOrExtNode(2, []uint8{index}, oneValue)
+						return extNode, ret
 
 					} else if firstDigit := getFirstDigitOfAscii(leftNode.flag_value.encoded_prefix); firstDigit == 3 || firstDigit == 4 || firstDigit == 5 {
 						// leftNode is Leaf.
@@ -522,6 +533,7 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 				// 'node' is now Branch node next to the Ext node.
 
 				retNode, ret := delete_helper(branchNode, keyMPT[matchLen:], keySearch[matchLen:], db)
+				// 'retNode' could be Leaf, Ext, or Branch.
 				if retNode.node_type == 1 {
 					// 'retNode' is Branch.
 					delete(db, node.hash_node())
