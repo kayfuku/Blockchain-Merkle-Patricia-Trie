@@ -483,7 +483,7 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 			if keySearch[matchLen] == 16 && len(keyMPT) == matchLen {
 				// Exact match.
 				// Del-0. Just one node.
-				// Del-3. Insert("a"), Insert("aa"), Get("aa"), stack 3. keyMPT: [1], keySearch: [1 16], matchLen: 1
+				// Del-3. Insert("a"), Insert("aa"), Delete("aa"), stack 3. keyMPT: [1], keySearch: [1 16], matchLen: 1
 				delete(db, node.hash_node())
 				flagValue := Flag_value{encoded_prefix: nil, value: ""}
 				node = Node{node_type: 0, branch_value: [17]string{}, flag_value: flagValue}
@@ -494,6 +494,16 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 			return node, "path_not_found"
 
 		} else if matchLen == 0 {
+
+			if keySearch[matchLen] == 16 {
+				// Del-1. Insert("a"), Insert("b"), Delete("b"), stack 3. keyMPT: [], keySearch: [16], matchLen: 0
+				delete(db, node.hash_node())
+				flagValue := Flag_value{encoded_prefix: nil, value: ""}
+				node = Node{node_type: 0, branch_value: [17]string{}, flag_value: flagValue}
+				return node, ""
+			}
+
+			return node, ""
 
 		}
 

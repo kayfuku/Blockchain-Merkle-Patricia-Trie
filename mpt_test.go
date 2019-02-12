@@ -232,23 +232,23 @@ func Test(t *testing.T) {
 			"Expected %s, but was %s", "orange", ret)
 	}
 
-	// // Del-1.
-	// fmt.Println("Del-1. Delete(\"b\")")
-	// mpt.Delete("b")
-	// fmt.Println("Get(\"a\")")
-	// ret = mpt.Get("a")
-	// fmt.Println(ret) // ??
-	// if ret != "apple" {
-	// 	t.Errorf("Del-1. Delete(\"b\"): Insert(\"a\", \"apple\"), Insert(\"b\", \"orange\"), Get(\"a\") \n"+
-	// 		"Expected %s, but was %s", "apple", ret)
-	// }
-	// fmt.Println("Get(\"b\")")
-	// ret = mpt.Get("b")
-	// fmt.Println(ret) // ??
-	// if ret != "" {
-	// 	t.Errorf("Del-1. Delete(\"b\"): Insert(\"a\", \"apple\"), Insert(\"b\", \"orange\"), Get(\"b\") \n"+
-	// 		"Expected %s, but was %s", "", ret)
-	// }
+	// Del-1.
+	fmt.Println("Del-1. Delete(\"b\")")
+	mpt.Delete("b")
+	fmt.Println("Get(\"a\")")
+	ret = mpt.Get("a")
+	fmt.Println(ret) // apple
+	if ret != "apple" {
+		t.Errorf("Del-1. Delete(\"b\"): Insert(\"a\", \"apple\"), Insert(\"b\", \"orange\"), Get(\"a\") \n"+
+			"Expected %s, but was %s", "apple", ret)
+	}
+	fmt.Println("Get(\"b\")")
+	ret = mpt.Get("b")
+	fmt.Println(ret) // ""
+	if ret != "" {
+		t.Errorf("Del-1. Delete(\"b\"): Insert(\"a\", \"apple\"), Insert(\"b\", \"orange\"), Get(\"b\") \n"+
+			"Expected %s, but was %s", "", ret)
+	}
 
 	// Case B-3 (Partial match):
 	// Insert("aa", "apple")
