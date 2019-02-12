@@ -328,6 +328,24 @@ func Test(t *testing.T) {
 			"Expected %s, but was %s", "orange", ret)
 	}
 
+	// Del-1. C.
+	fmt.Println("Del-1. C. Delete(\"p\")")
+	mpt.Delete("p")
+	fmt.Println("Get(\"a\")")
+	ret = mpt.Get("a")
+	fmt.Println(ret) // apple
+	if ret != "apple" {
+		t.Errorf("Del-1. C. Insert(\"a\", \"apple\"), Insert(\"p\", \"orange\"), Delete(\"p\"), Get(\"a\") \n"+
+			"Expected %s, but was %s", "apple", ret)
+	}
+	fmt.Println("Get(\"p\")")
+	ret = mpt.Get("p")
+	fmt.Println(ret) // ""
+	if ret != "" {
+		t.Errorf("Del-1. C. Insert(\"a\", \"apple\"), Insert(\"p\", \"orange\"), Delete(\"p\"), Get(\"p\") \n"+
+			"Expected %s, but was %s", "", ret)
+	}
+
 	// Instructor's test cases.
 	// Insert("a", "apple")
 	// Insert("b", "banana")

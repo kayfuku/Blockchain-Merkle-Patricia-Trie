@@ -429,7 +429,7 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 						append([]uint8{index},
 							append(compact_decode(leftNode.flag_value.encoded_prefix), 16)...))
 				} else {
-					// leftNode is not Leaf.
+					// leftNode is not Leaf. TODO ***
 
 				}
 
@@ -445,6 +445,7 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 
 			encodedPrefix := nextNode.flag_value.encoded_prefix
 			keyMPT := compact_decode(encodedPrefix)
+
 			retNode, ret := delete_helper(nextNode, keyMPT, keySearch[1:], db)
 			if retNode.node_type == 0 {
 				// 'retNode' is Null node.
@@ -486,22 +487,24 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 				// 'node' is Ext node.
 				// Del-3. Insert("a"), Insert("aa"), Delete("aa"), stack 1. keyMPT: [6 1], keySearch: [6 1 6 1 16], matchLen: 2
 				// Del-1. Insert("a"), Insert("b"), Delete("b"), stack 1.
+				// Del-4. stack 1.
 				branchNode := db[node.flag_value.value]
 				// 'node' is now Branch node next to the Ext node.
 
 				retNode, ret := delete_helper(branchNode, keyMPT[matchLen:], keySearch[matchLen:], db)
 				if firstDigit := getFirstDigitOfAscii(retNode.flag_value.encoded_prefix); firstDigit == 3 || firstDigit == 4 || firstDigit == 5 {
 					// 'retNode' is Leaf.
-					// retNode.flag_value.encoded_prefix = compact_encode(append(compact_decode(node.flag_value.encoded_prefix), 16))
 					retNode.flag_value.encoded_prefix = compact_encode(
 						append(keyMPT,
 							append(compact_decode(retNode.flag_value.encoded_prefix), 16)...))
 
 					return retNode, ret
 				} else {
-					// 'retNode' is not Leaf.
+					// 'retNode' is not Leaf. TODO ***
 
 				}
+
+				// ??
 				node.flag_value.value = putNodeInDb(retNode, db)
 				return node, ret
 			}
