@@ -891,4 +891,65 @@ func Test(t *testing.T) {
 			"Expected %s, but was %s", "", ret)
 	}
 
+	// For Del-2b.
+	// Insert("p", "apple")
+	// Insert("aaa", "orange")
+	// Insert("aap", "banana")
+	// Get("p"), Get("aaa"), Get("aap")
+	fmt.Println("For Del-2b: ")
+	mpt = p1.NewMPT()
+	fmt.Println("Insert(\"p\", \"apple\")")
+	mpt.Insert("p", "apple")
+	fmt.Println("Insert(\"aaa\", \"orange\")")
+	mpt.Insert("aaa", "orange")
+	fmt.Println("Insert(\"aap\", \"banana\")")
+	mpt.Insert("aap", "banana")
+	fmt.Println("Get(\"p\")")
+	ret = mpt.Get("p")
+	fmt.Println(ret) // apple
+	if ret != "apple" {
+		t.Errorf("For Del-2b. Insert(\"p\", \"apple\"), Insert(\"aaa\", \"orange\"), Insert(\"aap\", \"banana\"), Get(\"p\") \n"+
+			"Expected %s, but was %s", "apple", ret)
+	}
+	fmt.Println("Get(\"aaa\")")
+	ret = mpt.Get("aaa")
+	fmt.Println(ret) // orange
+	if ret != "orange" {
+		t.Errorf("For Del-2b. Insert(\"p\", \"apple\"), Insert(\"aaa\", \"orange\"), Insert(\"aap\", \"banana\"), Get(\"aaa\") \n"+
+			"Expected %s, but was %s", "orange", ret)
+	}
+	fmt.Println("Get(\"aap\")")
+	ret = mpt.Get("aap")
+	fmt.Println(ret) // banana
+	if ret != "banana" {
+		t.Errorf("For Del-2b. Insert(\"p\", \"apple\"), Insert(\"aaa\", \"orange\"), Insert(\"aap\", \"banana\"), Get(\"aap\") \n"+
+			"Expected %s, but was %s", "banana", ret)
+	}
+
+	// Del-2b.
+	fmt.Println("Del-2b.")
+	fmt.Println("Delete(\"p\")")
+	mpt.Delete("p")
+	fmt.Println("Get(\"aaa\")")
+	ret = mpt.Get("aaa")
+	fmt.Println(ret) // ??
+	if ret != "orange" {
+		t.Errorf("Del-2b. Insert(\"p\", \"apple\"), Insert(\"aaa\", \"orange\"), Insert(\"aap\", \"banana\"), Delete(\"p\"), Get(\"aaa\") \n"+
+			"Expected %s, but was %s", "orange", ret)
+	}
+	fmt.Println("Get(\"aap\")")
+	ret = mpt.Get("aap")
+	fmt.Println(ret) // ??
+	if ret != "banana" {
+		t.Errorf("Del-2b. Insert(\"p\", \"apple\"), Insert(\"aaa\", \"orange\"), Insert(\"aap\", \"banana\"), Delete(\"p\"), Get(\"aap\") \n"+
+			"Expected %s, but was %s", "banana", ret)
+	}
+	fmt.Println("Get(\"p\")")
+	ret = mpt.Get("p")
+	fmt.Println(ret) // ""
+	if ret != "" {
+		t.Errorf("Del-2b. Insert(\"p\", \"apple\"), Insert(\"aaa\", \"orange\"), Insert(\"aap\", \"banana\"), Delete(\"p\"), Get(\"p\") \n"+
+			"Expected %s, but was %s", "", ret)
+	}
+
 }

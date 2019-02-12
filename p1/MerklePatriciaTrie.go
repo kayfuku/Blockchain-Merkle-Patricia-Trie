@@ -446,6 +446,7 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 				return leftNode, ""
 			}
 
+			return node, ""
 		}
 
 		if nextNode, ok := db[node.branch_value[keySearch[0]]]; ok {
