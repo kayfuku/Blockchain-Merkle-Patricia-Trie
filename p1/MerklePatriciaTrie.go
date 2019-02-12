@@ -474,13 +474,20 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 					// Del-1. stack 2.
 					leftNode := db[oneValue]
 					// 'leftNode' could be Leaf, Ext, or Branch.
-					if firstDigit := getFirstDigitOfAscii(leftNode.flag_value.encoded_prefix); firstDigit == 3 || firstDigit == 4 || firstDigit == 5 {
+					if leftNode.node_type == 1 {
+						// 'retNode' is Branch.
+						// Del-6.
+						delete(db, node.hash_node())
+						node.flag_value.value = putNodeInDb(leftNode, db)
+						return node, ret
+
+					} else if firstDigit := getFirstDigitOfAscii(leftNode.flag_value.encoded_prefix); firstDigit == 3 || firstDigit == 4 || firstDigit == 5 {
 						// leftNode is Leaf.
 						leftNode.flag_value.encoded_prefix = compact_encode(
 							append([]uint8{index},
 								append(compact_decode(leftNode.flag_value.encoded_prefix), 16)...))
 					} else {
-						// leftNode is Ext or Branch.
+						// leftNode is Ext.
 						// Del-2.
 						leftNode.flag_value.encoded_prefix = compact_encode(
 							append([]uint8{index}, compact_decode(leftNode.flag_value.encoded_prefix)...))
@@ -516,7 +523,7 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 
 				retNode, ret := delete_helper(branchNode, keyMPT[matchLen:], keySearch[matchLen:], db)
 				if retNode.node_type == 1 {
-					// 'retNode' is Branch. Do nothing.
+					// 'retNode' is Branch.
 					delete(db, node.hash_node())
 					node.flag_value.value = putNodeInDb(retNode, db)
 					return node, ret
