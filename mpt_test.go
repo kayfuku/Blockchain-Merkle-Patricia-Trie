@@ -802,4 +802,75 @@ func Test(t *testing.T) {
 			"Expected %s, but was %s", "", ret)
 	}
 
+	// For Del-5.
+	// Insert("aaa", "apple")
+	// Insert("aap", "orange")
+	// Insert("aaaa", "banana")
+	// Insert("aa", "kiwi")
+	// Get("aaa"), Get("aap"), Get("aaaa"), Get("aa")
+	fmt.Println("For Del-5: ")
+	mpt = p1.NewMPT()
+	fmt.Println("Insert(\"aaa\", \"apple\")")
+	mpt.Insert("aaa", "apple")
+	fmt.Println("Insert(\"aap\", \"orange\")")
+	mpt.Insert("aap", "orange")
+	fmt.Println("Insert(\"aaaa\", \"banana\")")
+	mpt.Insert("aaaa", "banana")
+	fmt.Println("Insert(\"aa\", \"kiwi\")")
+	mpt.Insert("aa", "kiwi")
+	fmt.Println("Get(\"aaa\")")
+	ret = mpt.Get("aaa")
+	fmt.Println(ret) // apple
+	if ret != "apple" {
+		t.Errorf("For Del-5. Insert(\"aaa\", \"apple\"), Insert(\"aap\", \"orange\"), Insert(\"aaaa\", \"banana\"), Insert(\"aa\", \"kiwi\"), Get(\"aaa\") \n"+
+			"Expected %s, but was %s", "apple", ret)
+	}
+	fmt.Println("Get(\"aap\")")
+	ret = mpt.Get("aap")
+	fmt.Println(ret) // orange
+	if ret != "orange" {
+		t.Errorf("For Del-5. Insert(\"aaa\", \"apple\"), Insert(\"aap\", \"orange\"), Insert(\"aaaa\", \"banana\"), Insert(\"aa\", \"kiwi\"), Get(\"aap\") \n"+
+			"Expected %s, but was %s", "orange", ret)
+	}
+	fmt.Println("Get(\"aaaa\")")
+	ret = mpt.Get("aaaa")
+	fmt.Println(ret) // banana
+	if ret != "banana" {
+		t.Errorf("For Del-5. Insert(\"aaa\", \"apple\"), Insert(\"aap\", \"orange\"), Insert(\"aaaa\", \"banana\"), Insert(\"aa\", \"kiwi\"), Get(\"aaaa\") \n"+
+			"Expected %s, but was %s", "banana", ret)
+	}
+	fmt.Println("Get(\"aa\")")
+	ret = mpt.Get("aa")
+	fmt.Println(ret) // kiwi
+	if ret != "kiwi" {
+		t.Errorf("For Del-5. Insert(\"aaa\", \"apple\"), Insert(\"aap\", \"orange\"), Insert(\"aaaa\", \"banana\"), Insert(\"aa\", \"kiwi\"), Get(\"aa\") \n"+
+			"Expected %s, but was %s", "kiwi", ret)
+	}
+
+	// // Del-2.
+	// fmt.Println("Del-2.")
+	// fmt.Println("Delete(\"aap\")")
+	// mpt.Delete("aap")
+	// fmt.Println("Get(\"aaa\")")
+	// ret = mpt.Get("aaa")
+	// fmt.Println(ret) // apple
+	// if ret != "apple" {
+	// 	t.Errorf("Del-2. Insert(\"aaa\", \"apple\"), Insert(\"aap\", \"orange\"), Insert(\"aaaa\", \"banana\"), Delete(\"aap\"), Get(\"aaa\") \n"+
+	// 		"Expected %s, but was %s", "apple", ret)
+	// }
+	// fmt.Println("Get(\"aaaa\")")
+	// ret = mpt.Get("aaaa")
+	// fmt.Println(ret) // banana
+	// if ret != "banana" {
+	// 	t.Errorf("Del-2. Insert(\"aaa\", \"apple\"), Insert(\"aap\", \"orange\"), Insert(\"aaaa\", \"banana\"), Delete(\"aap\"), Get(\"aaaa\") \n"+
+	// 		"Expected %s, but was %s", "", ret)
+	// }
+	// fmt.Println("Get(\"aap\")")
+	// ret = mpt.Get("aap")
+	// fmt.Println(ret) // ""
+	// if ret != "" {
+	// 	t.Errorf("Del-2. Insert(\"aaa\", \"apple\"), Insert(\"aap\", \"orange\"), Insert(\"aaaa\", \"banana\"), Delete(\"aap\"), Get(\"aap\") \n"+
+	// 		"Expected %s, but was %s", "", ret)
+	// }
+
 }
