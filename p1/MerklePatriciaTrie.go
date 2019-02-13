@@ -36,8 +36,6 @@ type MerklePatriciaTrie struct {
 func NewMPT() *MerklePatriciaTrie {
 	// Initialize node.
 	nullNode := createNewLeafOrExtNode(0, nil, "")
-	// flagValue := Flag_value{encoded_prefix: nil, value: ""}
-	// node := Node{node_type: 0, branch_value: [17]string{}, flag_value: flagValue}
 
 	mpt := &MerklePatriciaTrie{}
 	mpt.db = map[string]Node{}
@@ -246,7 +244,7 @@ func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 	keyMPT := compact_decode(encodedPrefix)
 
 	newRootNode := insert_helper(rootNode, keyMPT, keySearch, new_value, db)
-	// delete(db, mpt.root)
+	delete(db, mpt.root)
 	mpt.root = putNodeInDb(newRootNode, db)
 
 	return
@@ -435,6 +433,7 @@ func (mpt *MerklePatriciaTrie) Delete(key string) string {
 	keyMPT := compact_decode(encodedPrefix)
 
 	newRootNode, ret := delete_helper(rootNode, keyMPT, keySearch, db)
+	delete(db, mpt.root)
 	mpt.root = putNodeInDb(newRootNode, db)
 
 	return ret
@@ -600,11 +599,6 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 				delete(db, node.hash_node())
 				nullNode := createNewLeafOrExtNode(0, nil, "")
 				return nullNode, ""
-
-				// flagValue := Flag_value{encoded_prefix: nil, value: ""}
-				// node = Node{node_type: 0, branch_value: [17]string{}, flag_value: flagValue}
-				// return node, ""
-
 			}
 
 			// 'node' is Leaf node and keySearch is shorter or longer than keyMPT.
@@ -616,9 +610,6 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 				// Del-1. Insert("a"), Insert("b"), Delete("b"), stack 3. keyMPT: [], keySearch: [16], matchLen: 0
 				delete(db, node.hash_node())
 				nullNode := createNewLeafOrExtNode(0, nil, "")
-				// flagValue := Flag_value{encoded_prefix: nil, value: ""}
-				// node = Node{node_type: 0, branch_value: [17]string{}, flag_value: flagValue}
-				// return node, ""
 				return nullNode, ""
 			}
 
@@ -697,6 +688,10 @@ func (node *Node) hash_node() string {
 	case 2:
 		str = node.flag_value.value
 	}
+
+	// The instructor said "feel free to change that part of "hash_node()".
+	address := fmt.Sprintf("%p", node)
+	str = address + str
 
 	sum := sha3.Sum256([]byte(str))
 	return "HashStart_" + hex.EncodeToString(sum[:]) + "_HashEnd"
