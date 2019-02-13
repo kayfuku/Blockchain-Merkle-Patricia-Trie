@@ -111,10 +111,12 @@ func compact_decode(encoded_arr []uint8) []uint8 {
 	return hex_array[cut:]
 }
 
+// func (mpt *MerklePatriciaTrie) Get(key string) (string, error) {
 func (mpt *MerklePatriciaTrie) Get(key string) string {
 	// TODO
 	if key == "" {
 		return ""
+		// return "", nil
 	}
 
 	keySearch := convert_string_to_hex(key)
@@ -124,6 +126,7 @@ func (mpt *MerklePatriciaTrie) Get(key string) string {
 	keyMPT := compact_decode(encodedPrefix)
 
 	return get_helper(rootNode, keyMPT, keySearch, mpt.db)
+	// return get_helper(rootNode, keyMPT, keySearch, mpt.db), nil
 }
 func get_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) string {
 
@@ -372,9 +375,15 @@ func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string, db ma
 				branchNode.branch_value[keySearch[matchLen]] = putNodeInDb(leafNode, db)
 
 				if _, ok := db[node.flag_value.value]; ok {
-					// E-4.
-					extNode := createNewLeafOrExtNode(2, keyMPT[1:], node.flag_value.value)
-					branchNode.branch_value[keyMPT[0]] = putNodeInDb(extNode, db)
+					if len(keyMPT[1:]) != 0 {
+						// E-4.
+						extNode := createNewLeafOrExtNode(2, keyMPT[1:], node.flag_value.value)
+						branchNode.branch_value[keyMPT[0]] = putNodeInDb(extNode, db)
+					} else {
+						// E-4b
+						branchNode.branch_value[keyMPT[0]] = node.flag_value.value
+					}
+
 				} else {
 					// B-2, C.
 					leafNode = createNewLeafOrExtNode(2, append(keyMPT[matchLen+1:], 16), node.flag_value.value)
