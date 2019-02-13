@@ -369,40 +369,40 @@ func Test(t *testing.T) {
 			"Expected %s, but was %s", "orange", ret)
 	}
 
-	// // Case C-3.
-	// // Insert("a", "apple")
-	// // Insert("b", "orange")
-	// // Insert("ab", "banana")
-	// // Get("a"), Get("b"), Get("ab")
-	// fmt.Println("Case C-3: ")
-	// mpt = p1.NewMPT()
-	// fmt.Println("Insert(\"a\", \"apple\")")
-	// mpt.Insert("a", "apple")
-	// fmt.Println("Insert(\"b\", \"orange\")")
-	// mpt.Insert("b", "orange")
-	// fmt.Println("Insert(\"ab\", \"banana\")")
-	// mpt.Insert("ab", "banana")
-	// fmt.Println("Get(\"a\")")
-	// ret = mpt.Get("a")
-	// fmt.Println(ret) // ??
-	// if ret != "apple" {
-	// 	t.Errorf("Case C-3: Insert(\"a\", \"apple\"), Insert(\"b\", \"orange\"), Insert(\"ab\", \"banana\"), Get(\"a\") \n"+
-	// 		"Expected %s, but was %s", "apple", ret)
-	// }
-	// fmt.Println("Get(\"b\")")
-	// ret = mpt.Get("b")
-	// fmt.Println(ret) // ??
-	// if ret != "orange" {
-	// 	t.Errorf("Case C-3: Insert(\"a\", \"apple\"), Insert(\"b\", \"orange\"), Insert(\"ab\", \"banana\"), Get(\"b\") \n"+
-	// 		"Expected %s, but was %s", "orange", ret)
-	// }
-	// fmt.Println("Get(\"ab\")")
-	// ret = mpt.Get("ab")
-	// fmt.Println(ret) // ??
-	// if ret != "banana" {
-	// 	t.Errorf("Case C-3: Insert(\"a\", \"apple\"), Insert(\"b\", \"orange\"), Insert(\"ab\", \"banana\"), Get(\"ab\") \n"+
-	// 		"Expected %s, but was %s", "banana", ret)
-	// }
+	// Case C-3.
+	// Insert("a", "apple")
+	// Insert("b", "orange")
+	// Insert("ab", "banana")
+	// Get("a"), Get("b"), Get("ab")
+	fmt.Println("Case C-3: ")
+	mpt = p1.NewMPT()
+	fmt.Println("Insert(\"a\", \"apple\")")
+	mpt.Insert("a", "apple")
+	fmt.Println("Insert(\"b\", \"orange\")")
+	mpt.Insert("b", "orange")
+	fmt.Println("Insert(\"ab\", \"banana\")")
+	mpt.Insert("ab", "banana")
+	fmt.Println("Get(\"a\")")
+	ret = mpt.Get("a")
+	fmt.Println(ret) // apple
+	if ret != "apple" {
+		t.Errorf("Case C-3: Insert(\"a\", \"apple\"), Insert(\"b\", \"orange\"), Insert(\"ab\", \"banana\"), Get(\"a\") \n"+
+			"Expected %s, but was %s", "apple", ret)
+	}
+	fmt.Println("Get(\"b\")")
+	ret = mpt.Get("b")
+	fmt.Println(ret) // orange
+	if ret != "orange" {
+		t.Errorf("Case C-3: Insert(\"a\", \"apple\"), Insert(\"b\", \"orange\"), Insert(\"ab\", \"banana\"), Get(\"b\") \n"+
+			"Expected %s, but was %s", "orange", ret)
+	}
+	fmt.Println("Get(\"ab\")")
+	ret = mpt.Get("ab")
+	fmt.Println(ret) // banana
+	if ret != "banana" {
+		t.Errorf("Case C-3: Insert(\"a\", \"apple\"), Insert(\"b\", \"orange\"), Insert(\"ab\", \"banana\"), Get(\"ab\") \n"+
+			"Expected %s, but was %s", "banana", ret)
+	}
 
 	// Instructor's test cases.
 	// Insert("a", "apple")
