@@ -908,6 +908,7 @@ func Test(t *testing.T) {
 	// Insert("aa", "banana")
 	// Insert("ap", "orange")
 	// Insert("b", "new")
+	// Delete("aa")
 	// Get("p"), Get("aa"), Get("ap"), Get("b")
 	fmt.Println("Del-8b: ")
 	mpt = p1.NewMPT()

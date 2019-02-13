@@ -35,12 +35,13 @@ type MerklePatriciaTrie struct {
 
 func NewMPT() *MerklePatriciaTrie {
 	// Initialize node.
-	flagValue := Flag_value{encoded_prefix: nil, value: ""}
-	node := Node{node_type: 0, branch_value: [17]string{}, flag_value: flagValue}
+	nullNode := createNewLeafOrExtNode(0, nil, "")
+	// flagValue := Flag_value{encoded_prefix: nil, value: ""}
+	// node := Node{node_type: 0, branch_value: [17]string{}, flag_value: flagValue}
 
 	mpt := &MerklePatriciaTrie{}
 	mpt.db = map[string]Node{}
-	mpt.root = putNodeInDb(node, mpt.db)
+	mpt.root = putNodeInDb(nullNode, mpt.db)
 
 	return mpt
 }
@@ -71,8 +72,6 @@ func compact_encode(hex_array []uint8) []uint8 {
 		hex_array = hex_array[:len(hex_array)-1]
 	}
 	var isOdd uint8 = uint8(len(hex_array) % 2)
-	// fmt.Println("isLeaf: ", isLeaf)
-	// fmt.Println("isOdd: ", isOdd)
 	var flagInHexArray uint8 = 2*isLeaf + isOdd
 	if isOdd == 1 {
 		hex_array = append([]uint8{flagInHexArray}, hex_array...)
@@ -105,33 +104,17 @@ func compact_decode(encoded_arr []uint8) []uint8 {
 		hex_array[i*2+1] = ascii % 16
 	}
 
-	// Remove prefix and return hex array /wo 16.
+	// Remove prefix and return hex array without 16.
 	// If hex hex_array[0] is even, then cut first two. If hex hex_array[0] is odd, then cut first one.
 	cut := 2 - hex_array[0]&1
 	return hex_array[cut:]
 }
 
-// // Get function returning two values for testing.
-// func (mpt *MerklePatriciaTrie) Get(key string) (string, error) {
-// 	// TODO
-// 	if key == "" {
-// 		return "", nil
-// 	}
-
-// 	keySearch := convert_string_to_hex(key)
-
-// 	rootNode := mpt.db[mpt.root]
-// 	encodedPrefix := rootNode.flag_value.encoded_prefix
-// 	keyMPT := compact_decode(encodedPrefix)
-
-// 	return get_helper(rootNode, keyMPT, keySearch, mpt.db), nil
-// }
-
-// Get function.
-func (mpt *MerklePatriciaTrie) Get(key string) string {
+// Get function returning two values for testing.
+func (mpt *MerklePatriciaTrie) Get(key string) (string, error) {
 	// TODO
 	if key == "" {
-		return ""
+		return "", nil
 	}
 
 	keySearch := convert_string_to_hex(key)
@@ -140,8 +123,24 @@ func (mpt *MerklePatriciaTrie) Get(key string) string {
 	encodedPrefix := rootNode.flag_value.encoded_prefix
 	keyMPT := compact_decode(encodedPrefix)
 
-	return get_helper(rootNode, keyMPT, keySearch, mpt.db)
+	return get_helper(rootNode, keyMPT, keySearch, mpt.db), nil
 }
+
+// // Get function.
+// func (mpt *MerklePatriciaTrie) Get(key string) string {
+// 	// TODO
+// 	if key == "" {
+// 		return ""
+// 	}
+
+// 	keySearch := convert_string_to_hex(key)
+
+// 	rootNode := mpt.db[mpt.root]
+// 	encodedPrefix := rootNode.flag_value.encoded_prefix
+// 	keyMPT := compact_decode(encodedPrefix)
+
+// 	return get_helper(rootNode, keyMPT, keySearch, mpt.db)
+// }
 func get_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) string {
 
 	nodeType := node.node_type
@@ -407,7 +406,7 @@ func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string, db ma
 					}
 
 				} else {
-					// B-2, C. D-2?.
+					// B-2, C. D-2.
 					leafNode = createNewLeafOrExtNode(2, append(keyMPT[matchLen+1:], 16), node.flag_value.value)
 					branchNode.branch_value[keyMPT[matchLen]] = putNodeInDb(leafNode, db)
 				}
@@ -583,8 +582,7 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 
 				} else {
 					// 'retNode' is Ext.
-					// Del-2.
-					// Del-7.
+					// Del-2. Del-7.
 					retNode.flag_value.encoded_prefix = compact_encode(
 						append(keyMPT, compact_decode(retNode.flag_value.encoded_prefix)...))
 				}
@@ -600,9 +598,13 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 				// Del-0. Just one node.
 				// Del-3. Insert("a"), Insert("aa"), Delete("aa"), stack 3. keyMPT: [1], keySearch: [1 16], matchLen: 1
 				delete(db, node.hash_node())
-				flagValue := Flag_value{encoded_prefix: nil, value: ""}
-				node = Node{node_type: 0, branch_value: [17]string{}, flag_value: flagValue}
-				return node, ""
+				nullNode := createNewLeafOrExtNode(0, nil, "")
+				return nullNode, ""
+
+				// flagValue := Flag_value{encoded_prefix: nil, value: ""}
+				// node = Node{node_type: 0, branch_value: [17]string{}, flag_value: flagValue}
+				// return node, ""
+
 			}
 
 			// 'node' is Leaf node and keySearch is shorter or longer than keyMPT.
@@ -613,9 +615,11 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 			if keySearch[matchLen] == 16 {
 				// Del-1. Insert("a"), Insert("b"), Delete("b"), stack 3. keyMPT: [], keySearch: [16], matchLen: 0
 				delete(db, node.hash_node())
-				flagValue := Flag_value{encoded_prefix: nil, value: ""}
-				node = Node{node_type: 0, branch_value: [17]string{}, flag_value: flagValue}
-				return node, ""
+				nullNode := createNewLeafOrExtNode(0, nil, "")
+				// flagValue := Flag_value{encoded_prefix: nil, value: ""}
+				// node = Node{node_type: 0, branch_value: [17]string{}, flag_value: flagValue}
+				// return node, ""
+				return nullNode, ""
 			}
 
 			return node, "path_not_found"
