@@ -158,7 +158,7 @@ func get_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) string
 			return node.branch_value[16]
 		}
 
-		if node, ok := db[node.branch_value[keySearch[0]]]; ok {
+		if nextNode, ok := db[node.branch_value[keySearch[0]]]; ok {
 			// There is the next node in the Branch.
 			// 'node' is now the next node.
 			// Case B-1. Insert("a"), Insert("aa"), Get("aa"), stack 2. keyMPT: [], keySearch: [6 1 16]
@@ -168,9 +168,9 @@ func get_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) string
 			// Case D-1. Insert("a"), Insert("p"), Insert("abc"), Get("abc") stack 1. keyMPT: [], keySearch: [6 1 6 2 6 3 16]
 			// Case D-1. Insert("a"), Insert("p"), Insert("abc"), Get("abc") stack 3. keyMPT: [], keySearch: [6 2 6 3 16]
 			// Case D-3. Insert("a"), Insert("p"), Insert("A"), Get("A") stack 1. keyMPT: [], keySearch: [4 1 16]
-			encodedPrefix := node.flag_value.encoded_prefix
+			encodedPrefix := nextNode.flag_value.encoded_prefix
 			keyMPT := compact_decode(encodedPrefix)
-			return get_helper(node, keyMPT, keySearch[1:], db)
+			return get_helper(nextNode, keyMPT, keySearch[1:], db)
 		}
 
 		// There is no link in the Branch.
@@ -309,9 +309,10 @@ func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string, db ma
 				if keySearch[matchLen] == 16 && len(keyMPT) > matchLen {
 					// Partial match. keySearch is done and keyMPT is left.
 					// Case E-1. stack 2. keyMPT: [1 6 1 6 1 6 1], keySearch: [1 6 1 16], matchLen: 3
+					// E-1b. stack 2. keyMPT: [1 6 1 6 1], keySearch: [1 16], matchLen: 1
 					extNode1 := createNewLeafOrExtNode(2, keyMPT[:matchLen], "")
 					branchNode := Node{node_type: 1, branch_value: [17]string{}}
-					extNode2 := createNewLeafOrExtNode(2, keyMPT[:matchLen], node.flag_value.value)
+					extNode2 := createNewLeafOrExtNode(2, keyMPT[matchLen+1:], node.flag_value.value)
 					delete(db, node.hash_node())
 					branchNode.branch_value[keyMPT[matchLen]] = putNodeInDb(extNode2, db)
 					branchNode.branch_value[16] = new_value
