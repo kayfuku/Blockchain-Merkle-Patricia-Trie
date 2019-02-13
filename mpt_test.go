@@ -768,6 +768,37 @@ func Test(t *testing.T) {
 	}
 
 	// Del-8
+	fmt.Println("Del-8.")
+	fmt.Println("Delete(\"b\")")
+	mpt.Delete("b")
+	fmt.Println("Get(\"p\")")
+	ret = mpt.Get("p")
+	fmt.Println(ret) // apple
+	if ret != "apple" {
+		t.Errorf("Del-8. Insert(\"p\", \"apple\"), Insert(\"aa\", \"banana\"), Insert(\"ap\", \"orange\"), Insert(\"b\", \"new\"), Get(\"p\") \n"+
+			"Expected %s, but was %s", "apple", ret)
+	}
+	fmt.Println("Get(\"aa\")")
+	ret = mpt.Get("aa")
+	fmt.Println(ret) // banana
+	if ret != "banana" {
+		t.Errorf("Del-8. Insert(\"p\", \"apple\"), Insert(\"aa\", \"banana\"), Insert(\"ap\", \"orange\"), Insert(\"b\", \"new\"), Get(\"aa\") \n"+
+			"Expected %s, but was %s", "banana", ret)
+	}
+	fmt.Println("Get(\"ap\")")
+	ret = mpt.Get("ap")
+	fmt.Println(ret) // orange
+	if ret != "orange" {
+		t.Errorf("Del-8. Insert(\"p\", \"apple\"), Insert(\"aa\", \"banana\"), Insert(\"ap\", \"orange\"), Insert(\"b\", \"new\"), Get(\"ap\") \n"+
+			"Expected %s, but was %s", "orange", ret)
+	}
+	fmt.Println("Get(\"b\")")
+	ret = mpt.Get("b")
+	fmt.Println(ret) // ""
+	if ret != "" {
+		t.Errorf("Del-8. Insert(\"p\", \"apple\"), Insert(\"aa\", \"banana\"), Insert(\"ap\", \"orange\"), Insert(\"b\", \"new\"), Get(\"b\") \n"+
+			"Expected %s, but was %s", "", ret)
+	}
 
 	// Case E-5
 	// Insert("p", "apple")
