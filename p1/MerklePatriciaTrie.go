@@ -111,25 +111,11 @@ func compact_decode(encoded_arr []uint8) []uint8 {
 	return hex_array[cut:]
 }
 
-func (mpt *MerklePatriciaTrie) Get(key string) (string, error) {
-	// TODO
-	if key == "" {
-		return "", nil
-	}
-
-	keySearch := convert_string_to_hex(key)
-
-	rootNode := mpt.db[mpt.root]
-	encodedPrefix := rootNode.flag_value.encoded_prefix
-	keyMPT := compact_decode(encodedPrefix)
-
-	return get_helper(rootNode, keyMPT, keySearch, mpt.db), nil
-}
-
-// func (mpt *MerklePatriciaTrie) Get(key string) string {
+// // Get function returning two values for testing.
+// func (mpt *MerklePatriciaTrie) Get(key string) (string, error) {
 // 	// TODO
 // 	if key == "" {
-// 		return ""
+// 		return "", nil
 // 	}
 
 // 	keySearch := convert_string_to_hex(key)
@@ -138,8 +124,24 @@ func (mpt *MerklePatriciaTrie) Get(key string) (string, error) {
 // 	encodedPrefix := rootNode.flag_value.encoded_prefix
 // 	keyMPT := compact_decode(encodedPrefix)
 
-// 	return get_helper(rootNode, keyMPT, keySearch, mpt.db)
+// 	return get_helper(rootNode, keyMPT, keySearch, mpt.db), nil
 // }
+
+// Get function.
+func (mpt *MerklePatriciaTrie) Get(key string) string {
+	// TODO
+	if key == "" {
+		return ""
+	}
+
+	keySearch := convert_string_to_hex(key)
+
+	rootNode := mpt.db[mpt.root]
+	encodedPrefix := rootNode.flag_value.encoded_prefix
+	keyMPT := compact_decode(encodedPrefix)
+
+	return get_helper(rootNode, keyMPT, keySearch, mpt.db)
+}
 func get_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) string {
 
 	nodeType := node.node_type
