@@ -278,7 +278,7 @@ func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string, db ma
 			// stack 1. keyMPT: [], keySearch: [6 1 6 1 16]
 			// Case E-2. Insert("p"), Insert("aaaaa"), Insert("aaaap"), Insert("aaaa"), Get("aaaa"),
 			// stack 1. keyMPT: [], keySearch: [6 1 6 1 6 1 6 1 16]
-			// Case C-2. stack 2. C-3. stack 2.
+			// Case C-2. stack 2. C-3. stack 2. E-4b. stack 1.
 			// Case D-2. stack 1.
 			encodedPrefix := nextNode.flag_value.encoded_prefix
 			keyMPT := compact_decode(encodedPrefix)
@@ -492,7 +492,7 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 			// There is the next node in the Branch.
 			// 'nextNode' is the node next to the Branch.
 			// Del-3. Insert("a"), Insert("aa"), Delete("aa"), stack 2. keyMPT: [], keySearch: [6 1 16]
-
+			// Del-8. stack 1. stack 2.
 			encodedPrefix := nextNode.flag_value.encoded_prefix
 			keyMPT := compact_decode(encodedPrefix)
 
@@ -510,13 +510,13 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 						return leafNode, ret
 					}
 					// The value is a link to the next node.
-					// Del-1. stack 2.
+					// Del-1. stack 2. Del-8.
 
 					leftNode := db[oneValue]
 					// 'leftNode' could be Leaf, Ext, or Branch.
 					if leftNode.node_type == 1 {
 						// 'leftNode' is Branch.
-						// Del-6.
+						// Del-6. Del-8.
 						delete(db, node.hash_node())
 						extNode := createNewLeafOrExtNode(2, []uint8{index}, oneValue)
 						return extNode, ret
@@ -538,6 +538,9 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 
 				return node, ret
 			}
+
+			// Del-8. 'retNode' is Ext.
+			node.branch_value[keySearch[0]] = putNodeInDb(retNode, db)
 
 			return node, ret
 		}
