@@ -1,3 +1,8 @@
+/*
+	CS686 Project 1 Merkle Patricia Trie
+	Author: Kei Fukutani
+	Date  : February 13, 2019
+*/
 package p1
 
 import (
@@ -9,6 +14,9 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
+// Hold encoded prefix in ASCII and value,
+// which is actual value in Leaf node or hash value of next node
+// in Ext node.
 type Flag_value struct {
 	// ASCII value array.
 	encoded_prefix []uint8
@@ -17,15 +25,17 @@ type Flag_value struct {
 	value string
 }
 
+// Hold node type, which is 0: Null, 1: Branch, 2: Ext or Leaf.
+// If the node is not Branch, 'branch_value' is default.
+// If the node is Branch, 'flag_value' is default.
 type Node struct {
 	// 0: Null, 1: Branch, 2: Ext or Leaf
-	node_type int
-	// If the node is not Branch, 'branch_value' is default.
+	node_type    int
 	branch_value [17]string
-	// If the node is Branch, 'flag_value' is default.
-	flag_value Flag_value
+	flag_value   Flag_value
 }
 
+// Hold root node of MerklePatriciaTrie and database for all nodes.
 type MerklePatriciaTrie struct {
 	// K: Node's hash value, V: Node
 	db map[string]Node
@@ -33,6 +43,7 @@ type MerklePatriciaTrie struct {
 	root string
 }
 
+// Create a new MerklePatriciaTrie.
 func NewMPT() *MerklePatriciaTrie {
 	// Initialize node.
 	nullNode := createNewLeafOrExtNode(0, nil, "")
@@ -57,6 +68,8 @@ func convert_string_to_hex(key string) []uint8 {
 	return key_hex
 }
 
+// Encode hex array, which ends with 16 if the node is Leaf,
+// to ASCII values.
 func compact_encode(hex_array []uint8) []uint8 {
 	// TODO
 	if len(hex_array) == 0 {
@@ -88,6 +101,7 @@ func compact_encode(hex_array []uint8) []uint8 {
 	return encoded_prefix
 }
 
+// Decode ASCII array to hex array without 16.
 // If Leaf, ignore 16 at the end
 func compact_decode(encoded_arr []uint8) []uint8 {
 	// TODO
@@ -108,7 +122,8 @@ func compact_decode(encoded_arr []uint8) []uint8 {
 	return hex_array[cut:]
 }
 
-// Get function returning two values for testing.
+// Return two values for testing.
+// Get value with key in the MerklePatriciaTrie.
 func (mpt *MerklePatriciaTrie) Get(key string) (string, error) {
 	// TODO
 	if key == "" {
@@ -124,7 +139,7 @@ func (mpt *MerklePatriciaTrie) Get(key string) (string, error) {
 	return get_helper(rootNode, keyMPT, keySearch, mpt.db), nil
 }
 
-// // Get function.
+// // Get value with key in the MerklePatriciaTrie.
 // func (mpt *MerklePatriciaTrie) Get(key string) string {
 // 	// TODO
 // 	if key == "" {
@@ -230,6 +245,7 @@ func get_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) string
 	return ""
 }
 
+// Insert value with key into the MerklePatriciaTrie.
 func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 	// TODO
 	if key == "" {
@@ -419,6 +435,7 @@ func insert_helper(node Node, keyMPT, keySearch []uint8, new_value string, db ma
 	return node
 }
 
+// Delete value in the MerklePatriciaTrie.
 func (mpt *MerklePatriciaTrie) Delete(key string) string {
 	// TODO
 	if key == "" {
@@ -621,6 +638,9 @@ func delete_helper(node Node, keyMPT, keySearch []uint8, db map[string]Node) (No
 	return node, "path_not_found"
 }
 
+// Check if there is only one value in the Branch node, and
+// if yes, then return true, that value, and the index of that value
+// in the node.
 func getOnlyOneValueInBranch(node Node) (bool, string, uint8) {
 	count := 0
 	var index uint8 = 0
@@ -635,6 +655,7 @@ func getOnlyOneValueInBranch(node Node) (bool, string, uint8) {
 	return count <= 1, oneValue, index
 }
 
+// Create a new node.
 func createNewLeafOrExtNode(nodeType int, keyHex []uint8, newValue string) Node {
 	encodedPrefix := compact_encode(keyHex)
 	flagValue := Flag_value{encoded_prefix: encodedPrefix, value: newValue}
@@ -642,12 +663,16 @@ func createNewLeafOrExtNode(nodeType int, keyHex []uint8, newValue string) Node 
 	return node
 }
 
+// Hash the node and put it into the database, and
+// return the hash value.
 func putNodeInDb(node Node, db map[string]Node) string {
 	hash := node.hash_node()
 	db[hash] = node
 	return hash
 }
 
+// Return the length of the same prefix of array a and array b
+// if both a and b have prefix in common.
 func prefixLen(a []uint8, b []uint8) int {
 	length := len(a)
 	if len(b) < length {
@@ -663,10 +688,14 @@ func prefixLen(a []uint8, b []uint8) int {
 	return i
 }
 
+// Get the first digit of ASCII value.
+// ex. if ASCII: 32, then return 3.
 func getFirstDigitOfAscii(encodedPrefix []uint8) uint8 {
 	firstDigit := encodedPrefix[0] / 10
 	return firstDigit
 }
+
+// The functions below has been provided by the instructors.
 
 func test_compact_encode() {
 	fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{1, 2, 3, 4, 5})), []uint8{1, 2, 3, 4, 5}))
