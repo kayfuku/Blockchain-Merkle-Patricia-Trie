@@ -7,6 +7,7 @@ package p1
 
 import (
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -127,7 +128,7 @@ func compact_decode(encoded_arr []uint8) []uint8 {
 func (mpt *MerklePatriciaTrie) Get(key string) (string, error) {
 	// TODO
 	if key == "" {
-		return "", nil
+		return "", errors.New("path_not_found")
 	}
 
 	keySearch := convert_string_to_hex(key)
@@ -136,7 +137,7 @@ func (mpt *MerklePatriciaTrie) Get(key string) (string, error) {
 	encodedPrefix := rootNode.flag_value.encoded_prefix
 	keyMPT := compact_decode(encodedPrefix)
 
-	return get_helper(rootNode, keyMPT, keySearch, mpt.db), nil
+	return get_helper(rootNode, keyMPT, keySearch, mpt.db), errors.New("path_not_found")
 }
 
 // // Get value with key in the MerklePatriciaTrie.
